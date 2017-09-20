@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: block-storage-test
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: block-storage-test
+    spec:
+      containers:
+        - image: ranada/block-storage-test:latest
+          name: block-storage-test
+          env:
+          - name: FILE_SIZES
+            value: "__FILE_SIZES__"
+          - name: TEST_END_TIME
+            value: "__TEST_END_TIME__"
+          - name: BLOCK_STORAGE_TEST_DIR
+            value: "__BLOCK_STORAGE_TEST_DIR__"
+          - name: MOUNT_DEVICE
+            value: "__MOUNT_DEVICE__"
+          - name: ELASTICSEARCH_HOST
+            value: "__ELASTICSEARCH_HOST__"
+          - name: ELASTICSEARCH_USER
+            value: "__ELASTICSEARCH_USER__"
+          - name: ELASTICSEARCH_PASSWORD
+            value: "__ELASTICSEARCH_PASSWORD__"
+          - name: STAY_ALIVE_SLEEP_TIME
+            value: "__STAY_ALIVE_SLEEP_TIME__"

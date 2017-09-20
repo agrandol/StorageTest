@@ -1,0 +1,28 @@
+input {
+	file {
+		path => "/home/iozone/output.txt"
+		start_position => "beginning"
+		tags => ["iozone","test"]
+		sincedb_path => "/home/iozone/.sincedb"
+	}
+}
+
+filter {
+	if [message] =~ /^{"/ {
+		json {
+			source => "message"
+		}
+	} else {
+		drop { } 
+	}
+}
+
+output {
+	if "_jsonparsefailure" not in [tags] {
+		elasticsearch {
+			hosts => ["__ELASTICSEARCH_HOST__"]
+			user => __ELASTICSEARCH_USER__
+			password => __ELASTICSEARCH_PASSWORD__
+		}
+	}
+}

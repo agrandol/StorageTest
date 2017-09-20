@@ -1,0 +1,31 @@
+input {
+	file {
+		path => "/home/block-storage/output.txt"
+		start_position => "beginning"
+		tags => ["blkstore","test"]
+		sincedb_path => "/home/block-storage/.sincedb"
+	}
+}
+
+filter {
+	if [message] =~ /^{"/ {
+		json {
+			source => "message"
+		}
+		split {
+			field => "results"
+		}
+	} else {
+		drop { } 
+	}
+}
+
+output {
+	if "_jsonparsefailure" not in [tags] {
+		elasticsearch {
+			hosts => ["__ELASTICSEARCH_HOST__"]
+			user => __ELASTICSEARCH_USER__
+			password => __ELASTICSEARCH_PASSWORD__
+		}
+	}
+}

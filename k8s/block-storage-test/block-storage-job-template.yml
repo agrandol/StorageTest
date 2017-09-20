@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: block-storage-job
+#  namespace: IV
+spec:
+  completions: 1
+  template:
+    metadata:	  
+      name: block-storage-job
+    spec:
+      containers:
+      - name: block-storage
+        image: ranada/block-storage-test:latest
+        imagePullPolicy: Always
+        env:
+        - name: FILE_SIZES
+          value: "__FILE_SIZES__"
+        - name: TEST_END_TIME
+          value: "__TEST_END_TIME__"
+        - name: BLOCK_STORAGE_TEST_DIR
+          value: "__BLOCK_STORAGE_TEST_DIR__"
+        - name: MOUNT_DEVICE
+          value: "__MOUNT_DEVICE__"
+        - name: ELASTICSEARCH_HOST
+          value: "__ELASTICSEARCH_HOST__"
+        - name: ELASTICSEARCH_USER
+          value: "__ELASTICSEARCH_USER__"
+        - name: ELASTICSEARCH_PASSWORD
+          value: "__ELASTICSEARCH_PASSWORD__"
+        - name: STAY_ALIVE_SLEEP_TIME
+          value: "__STAY_ALIVE_SLEEP_TIME__"
+#      imagePullSecrets:
+#        - name: yard
+      restartPolicy: Never
