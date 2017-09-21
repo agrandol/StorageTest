@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.1" \
+label version="0.0.2" \
       run="docker run iozone" \
 	  source="" \
 	  description="IOzone benchmark container that executes IOPS and Bandwidth test on a specific mount point. Results can be sent to Logstash, results of individual runs will be stored in /home/iozone/results." \
@@ -16,13 +16,14 @@ label version="0.0.1" \
 # set environment variables
 ENV container iozone-test
 ENV HOME_DIR /home/iozone
+ENV DATA_DIR /data
 
 # perform yum installs
-RUN yum -y update; yum clean all
-RUN yum -y install perl; yum clean all
-RUN yum -y install gcc; yum clean all
-RUN yum -y install make; yum clean all
-RUN yum -y install java-1.8.0-openjdk; yum clean all   # needed for logstash
+RUN yum -y update && yum -y install \
+	perl \
+	gcc \ 
+	make  
+#	java-1.8.0-openjdk   # needed for logstash
 #RUN yum -y install openssh-server; yum clean all       # for file transfer, in case a transfer in
 #RUN yum -y install openssh-clients; yum clean all      # for file transfer, transfer out
 #RUN yum -y install python; yum clean all               # for connection to MongoDB
@@ -32,6 +33,7 @@ RUN yum -y install java-1.8.0-openjdk; yum clean all   # needed for logstash
 RUN mkdir /home/iozone
 RUN mkdir /home/iozone/iozone3_469
 RUN mkdir /home/iozone/results
+RUN mkdir /data  # to hold results, can also be mounted to store results outside container
 
 # copy RPMs to install at startup
 # assumes the RPMs have been copied to the same directory as this Dockerfile

@@ -18,19 +18,24 @@ then
 fi
 
 # redirect all output and errors to the log file
-exec 3>&1 4>&2 >> ${TEST_HOME}/${LOG_FILENAME} 2>&1
+#exec 3>&1 4>&2 >> ${TEST_HOME}/${LOG_FILENAME} 2>&1
+exec 3>&1 4>&2 >> ${DATA_DIR}/${LOG_FILENAME} 2>&1
 
 # default mount and file system
-mntSpot=${TEST_HOME}/blockStoreWork
-FS=overlayfs
+#mntSpot=${TEST_HOME}/blockStoreWork
+mntSpot=${DATA_DIR}/blockStoreWork
+FS=overlayfs # will actually check a bit further down
 
 # if the file system mount point is set in environment
-if [ -n "${BLOCK_STORAGE_TEST_DIR}" ]
-then
-	# set the file system mount to use for testing
-	echo "Setting mount point to ${BLOCK_STORAGE_TEST_DIR}"
-	mntSpot=${BLOCK_STORAGE_TEST_DIR}
-fi
+#if [ -n "${BLOCK_STORAGE_TEST_DIR}" ]
+#then
+#	# set the file system mount to use for testing
+#	echo "Setting mount point to ${BLOCK_STORAGE_TEST_DIR}"
+#	mntSpot=${BLOCK_STORAGE_TEST_DIR}
+#fi
+
+# data files will be written to the /data directory, this directory can be mounted
+# to another or file system type using container/k8s mount feature
 
 instance=${1:-container}
 
@@ -43,7 +48,6 @@ MY_HOSTNAME=`hostname`
 #
 # Run the Block Storage Test
 #
-
 SIZES='102400 1048576 1073741824 10737418240 1099511627776' #  100KB 1MB 1GB 10GB 1TB
 SIZES='102400 1048576 1073741824 10737418240' #  100KB 1MB 1GB 10GB
 SIZES='102400 1048576 1073741824' #  100KB 1MB 1GB
@@ -59,11 +63,11 @@ fi
 
 blockHome=${mntSpot}/${MY_HOSTNAME}
 [ -d ${blockHome} ] || mkdir -p ${blockHome}
-_label Using ${blockHome}
 
 # find file system type of the test directory
 FS=`stat --file-system --format=%T ${mntSpot}`
 
+_label Using ${blockHome}
 _label Metric: blockStorage
 _label Hostname: ${MY_HOSTNAME}
 
@@ -102,4 +106,5 @@ echo "Block store test complete"
 exec 1>&3 3>&- 2>&4 4>&-
 
 # extract results
-${PERL} ${TEST_HOME}/simpleKPP.pl ${TEST_HOME}/${LOG_FILENAME}
+#${PERL} ${TEST_HOME}/simpleKPP.pl ${TEST_HOME}/${LOG_FILENAME}
+${PERL} ${TEST_HOME}/simpleKPP.pl ${DATA_DIR}/${LOG_FILENAME}

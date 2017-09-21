@@ -22,8 +22,8 @@ LOGSTASH_APP="/usr/share/logstash/bin/logstash"
 LOGSTASH_SETTINGS="/etc/logstash"
 LOGSTASH_CONF="logstash.conf"
 
-# set JAVA_HOME
-export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
+# set JAVA_HOME, needed for Logstash
+#export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 
 # if the Elasticsearch host is defined
 if [ -n "${ELASTICSEARCH_HOST}" ]
@@ -89,14 +89,16 @@ fi
 ##### 
 # Test this block with a real device, change or delete as needed
 #####
-if [ -n "${MOUNT_DEVICE}" ] && [ -n "${IOZONE_TEST_DIR}" ]
-then
-	# create the local directory for the mount
-	mkdir -p ${IOZONE_TEST_DIR}
-	
-	# mount the directory
-	mount ${MOUNT_DEVICE} ${IOZONE_TEST_DIR}
-fi
+#if [ -n "${MOUNT_DEVICE}" ] && [ -n "${IOZONE_TEST_DIR}" ]
+#then
+#	# create the local directory for the mount
+#	mkdir -p ${IOZONE_TEST_DIR}
+#	
+#	# mount the directory
+#	mount ${MOUNT_DEVICE} ${IOZONE_TEST_DIR}
+#fi
+
+IOZONE_TEST_DIR="/data";
 
 #----------------------------------------------------------------------
 # build the IOzone benchmark

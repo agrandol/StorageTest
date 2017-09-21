@@ -7,6 +7,7 @@ use POSIX;
 
 # input arguments, where the test should run
 chomp(my $testDir = $ARGV[0] || `pwd`);
+#my $testDir = '/data';
 
 #--------------------------------------------------------------------
 # IOPS test
@@ -168,13 +169,15 @@ $outputString .= '}';
 print $outputString, "\n";
 
 # write the output file that will be processed by Logstash
-my $filename = "output.txt";
+#my $filename = "output.txt";
+my $filename = "$testDir/output.txt";
 open FILE, ">> $filename" or die "Could not open $filename";
 print FILE $outputString, "\n";
 close FILE;
 
 # write an individual file for each run using the hostname and timestamp
-my $individualOutputFile = "./results/" . $hostname . "-" . $startTimestamp . ".txt";
+#my $individualOutputFile = "./results/" . $hostname . "-" . $startTimestamp . ".txt";
+my $individualOutputFile = "$testDir/" . $hostname . "-" . $startTimestamp . ".txt";
 open RESULTFILE, "> $individualOutputFile" or die "Could not open $individualOutputFile";
 print RESULTFILE $outputString, "\n";
 close RESULTFILE;

@@ -22,8 +22,8 @@ LOGSTASH_APP="/usr/share/logstash/bin/logstash"
 LOGSTASH_SETTINGS="/etc/logstash"
 LOGSTASH_CONF="logstash.conf"
 
-# set JAVA_HOME
-export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
+# set JAVA_HOME, needed for Logstash
+#export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 
 # if the Elasticsearch host is defined
 if [ -n "${ELASTICSEARCH_HOST}" ]
@@ -100,26 +100,30 @@ fi
 ##### 
 # Test this block with a real device, change or delete as needed
 #####
-if [ -n "${MOUNT_DEVICE}" ] && [ -n "${BLOCK_STORAGE_TEST_DIR}" ]
-then
-	# create the local directory for the mount
-	mkdir -p ${BLOCK_STORAGE_TEST_DIR}
-	
-	# mount the directory
-	mount ${MOUNT_DEVICE} ${BLOCK_STORAGE_TEST_DIR}
-fi
+#if [ -n "${MOUNT_DEVICE}" ] && [ -n "${BLOCK_STORAGE_TEST_DIR}" ]
+#then
+#	# create the local directory for the mount
+#	mkdir -p ${BLOCK_STORAGE_TEST_DIR}
+#	
+#	# mount the directory
+#	mount ${MOUNT_DEVICE} ${BLOCK_STORAGE_TEST_DIR}
+#fi
 
 #----------------------------------------------------------------------
 # start the test
-echo "Start block storage test"
-CONTINUOUS_OUTPUT_FILE="${CWD}/output.txt"
+TEST_START_TIME=`date`
+echo "Start block storage test: ${TEST_END_TIME}"
+
+#CONTINUOUS_OUTPUT_FILE="${CWD}/output.txt"
+CONTINUOUS_OUTPUT_FILE="${DATA_DIR}/output.txt"
 
 CONTINUE_TEST="TRUE"
 while [ "${CONTINUE_TEST}" = "TRUE" ]
 do
 	# create a file to store individual results
 	TEST_START_TIME=`date "+%Y%m%d-%H%M%S"`
-	INDIVIDUAL_OUTPUT_FILE="${CWD}/results/${h}-${TEST_START_TIME}.txt"
+	#INDIVIDUAL_OUTPUT_FILE="${CWD}/results/${h}-${TEST_START_TIME}.txt"
+	INDIVIDUAL_OUTPUT_FILE="${DATA_DIR}/${h}-${TEST_START_TIME}.txt"
 	
 	# run the test	
 	. ${CWD}/run-block-store.sh > ${INDIVIDUAL_OUTPUT_FILE}
