@@ -236,6 +236,7 @@ sub scan($) {
 		s/\r//g;
 		
 		# Header information
+		m#LABEL. Using (\S+)# and do { $info->singleton('testDirectory', $1); next; };
 		m#LABEL. Metric: (\S+)# and do { $info->singleton('metric', $1); next; };
 		m#LABEL. Hostname: (\S+)# and do { $info->singleton('hostname', $1); next; };
 		

@@ -147,8 +147,14 @@ do
 done # while loop
 
 #----------------------------------------------------------------------
+# package results and send to web server
+RESULTS_PACKAGE_FILENAME="${DATA_DIR}/${h}-block-storage-test.tar.gz"
+tar -cvzf ${RESULTS_PACKAGE_FILENAME} --exclude='/data/output.txt' /data/*.txt
+echo "Results written to: ${RESULTS_PACKAGE_FILENAME}"
+
+#----------------------------------------------------------------------
 # keep the script running so the container has time to write results to logstash
-echo "Writing results"
+echo "Writing results (waiting ${STAY_ALIVE_SLEEP_TIME})"
 sleep ${STAY_ALIVE_SLEEP_TIME}
 
 #----------------------------------------------------------------------

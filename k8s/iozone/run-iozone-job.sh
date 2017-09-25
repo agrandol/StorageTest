@@ -6,22 +6,37 @@
 #
 #set -x
 
+IOZONE_POD_NAME="iozone-job"
+
+
+#KUBECTL="kubectl" # for local minikube
+KUBECTL="oc"      # for main system, recommended by OpenShift
+
+if [ "${KUBECTL}" = "oc" ]
+then
+	# oc setup to assure running the correct project
+	${KUBECTL} project meadowgate
+
+	# refresh volume claim
+	${KUBECTL} delete pvc iozone-pvc-ceph
+	${KUBECTL} create -f iozone-pvc-ceph.yml
+fi
+
+# stop previous IOzone jobs
+${KUBECTL} delete jobs ${IOZONE_POD_NAME}
+
+
 # Useful variables
-IOZONE_STARTUP_WAIT="30s"
+IOZONE_STARTUP_WAIT="60s"
 LENGTH_OF_RUN="0 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
-#END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
-END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
-IOZONE_POD_NAME="iozone-job"
+END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
+#END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
 CWD=${PWD}
 
 # YAML files defining execution parameters of the container
 IOZONE_JOB_YAML="${CWD}/iozone-job.yml"
 IOZONE_JOB_YAML_TEMPLATE="${CWD}/iozone-job-template.yml"
-
-# Storage mount point
-IOZONE_TEST_DIR=""
-MOUNT_DEVICE=""
 
 # Logstash configuration parameters, Elasticsearch location
 ELASTICSEARCH_HOST="10.0.148.1:9200"
@@ -34,8 +49,6 @@ STAY_ALIVE_SLEEP_TIME="1m"
 # Create the YAML for the test job
 cat "${IOZONE_JOB_YAML_TEMPLATE}" \
     | sed "s|__TEST_END_TIME__|${END_TIME}|g" \
-	| sed "s|__IOZONE_TEST_DIR__|${IOZONE_TEST_DIR}|g" \
-	| sed "s|__MOUNT_DEVICE__|${MOUNT_DEVICE}|g" \
 	| sed "s|__ELASTICSEARCH_HOST__|${ELASTICSEARCH_HOST}|g" \
 	| sed "s|__ELASTICSEARCH_USER__|${ELASTICSEARCH_USER}|g" \
 	| sed "s|__ELASTICSEARCH_PASSWORD|${ELASTICSEARCH_PASSWORD}|g" \
@@ -44,10 +57,15 @@ cat "${IOZONE_JOB_YAML_TEMPLATE}" \
 	> ${IOZONE_JOB_YAML}
 
 # Start the IOzone test
-kubectl create -f ${IOZONE_JOB_YAML}
+${KUBECTL} create -f ${IOZONE_JOB_YAML}
 sleep ${IOZONE_STARTUP_WAIT}
 
-IOZONE_POD=`kubectl get --no-headers=true pods -o wide | grep ${IOZONE_POD_NAME} | grep Running | awk '{print $1}'`
+IOZONE_POD=`${KUBECTL} get --no-headers=true pods -o wide | grep ${IOZONE_POD_NAME} | grep Running | awk '{print $1}'`
 
 # Watch the IOzone log for results
-kubectl logs ${IOZONE_POD} -f
+if [ -n ${IOZONE_POD} ]
+then
+	${KUBECTL} logs ${IOZONE_POD} -f
+else
+	echo "There are no ${IOZONE_POD_NAME} pods running"
+fi

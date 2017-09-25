@@ -9,6 +9,14 @@ spec:
     metadata:	  
       name: iozone-job
     spec:
+      volumes:
+#      - name: scp-secret
+#        secret:
+#          secretName: "scp-secret"
+      - name: iozone-data-volume
+        persistentVolumeClaim: 
+          claimName: iozone-pvc-ceph
+
       containers:
       - name: iozone
         image: ranada/iozone:latest
@@ -16,10 +24,6 @@ spec:
         env:
         - name: TEST_END_TIME
           value: "__TEST_END_TIME__"
-        - name: IOZONE_TEST_DIR
-          value: "__IOZONE_TEST_DIR__"
-        - name: MOUNT_DEVICE
-          value: "__MOUNT_DEVICE__"
         - name: ELASTICSEARCH_HOST
           value: "__ELASTICSEARCH_HOST__"
         - name: ELASTICSEARCH_USER
@@ -28,6 +32,10 @@ spec:
           value: "__ELASTICSEARCH_PASSWORD__"
         - name: STAY_ALIVE_SLEEP_TIME
           value: "__STAY_ALIVE_SLEEP_TIME__"
-#      imagePullSecrets:
-#        - name: yard
+        volumeMounts:
+#        - name: scp-secret
+#          mountPath: /home/iozone
+#          readOnly: true
+        - name: iozone-data-volume
+          mountPath: "/data"
       restartPolicy: Never

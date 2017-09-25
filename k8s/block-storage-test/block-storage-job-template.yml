@@ -2,13 +2,21 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: block-storage-job
-#  namespace: IV
+  namespace: meadowgate
 spec:
   completions: 1
   template:
     metadata:	  
       name: block-storage-job
     spec:
+      volumes:
+#      - name: scp-secret
+#        secret:
+#          secretName: "scp-secret"
+      - name: block-storage-data-volume
+        persistentVolumeClaim: 
+          claimName: block-storage-pvc-ceph
+    
       containers:
       - name: block-storage
         image: ranada/block-storage-test:latest
@@ -18,10 +26,6 @@ spec:
           value: "__FILE_SIZES__"
         - name: TEST_END_TIME
           value: "__TEST_END_TIME__"
-        - name: BLOCK_STORAGE_TEST_DIR
-          value: "__BLOCK_STORAGE_TEST_DIR__"
-        - name: MOUNT_DEVICE
-          value: "__MOUNT_DEVICE__"
         - name: ELASTICSEARCH_HOST
           value: "__ELASTICSEARCH_HOST__"
         - name: ELASTICSEARCH_USER
@@ -30,6 +34,10 @@ spec:
           value: "__ELASTICSEARCH_PASSWORD__"
         - name: STAY_ALIVE_SLEEP_TIME
           value: "__STAY_ALIVE_SLEEP_TIME__"
-#      imagePullSecrets:
-#        - name: yard
+        volumeMounts:
+#       - name: scp-secret
+#          mountPath: /home/block-storage
+#          readOnly: true
+        - name: block-storage-data-volume
+          mountPath: "/data"
       restartPolicy: Never
