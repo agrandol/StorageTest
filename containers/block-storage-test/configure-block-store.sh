@@ -77,8 +77,8 @@ fi
 
 #----------------------------------------------------------------------
 # perform test set-up
-h=$(hostname)
-ip=$(hostname -i)
+HOSTNAME=$(hostname)
+IP_ADDRESS=$(hostname -i)
 
 # configure the test network (artifact from previous executions, sets variables)
 source ${TEST_HOME}/SETUP.container
@@ -123,7 +123,7 @@ do
 	# create a file to store individual results
 	TEST_START_TIME=`date "+%Y%m%d-%H%M%S"`
 	#INDIVIDUAL_OUTPUT_FILE="${CWD}/results/${h}-${TEST_START_TIME}.txt"
-	INDIVIDUAL_OUTPUT_FILE="${DATA_DIR}/${h}-${TEST_START_TIME}.txt"
+	INDIVIDUAL_OUTPUT_FILE="${DATA_DIR}/${HOSTNAME}-${TEST_START_TIME}.txt"
 	
 	# run the test	
 	. ${CWD}/run-block-store.sh > ${INDIVIDUAL_OUTPUT_FILE}
@@ -148,9 +148,30 @@ done # while loop
 
 #----------------------------------------------------------------------
 # package results and send to web server
-RESULTS_PACKAGE_FILENAME="${DATA_DIR}/${h}-block-storage-test.tar.gz"
-tar -cvzf ${RESULTS_PACKAGE_FILENAME} --exclude='/data/output.txt' /data/*.txt
-echo "Results written to: ${RESULTS_PACKAGE_FILENAME}"
+JOB_NAME="block-storage-test"
+RESULTS_FILENAME="${HOSTNAME}-${JOB_NAME}.tgz"
+RESULTS_FULL_FILEPATH="${DATA_DIR}/${RESULTS_FILENAME}"
+
+DATE_WITH_HOUR=`date "+%Y%m%d-%H"`
+#WWW_TARGET_HOST="10.50.100.5:8080"
+#WWW_TARGET_HOST="http://rhgsw2:8080"
+RESULTS_SERVER="10.50.100.5"
+WWW_TARGET_HOST="http://${RESULTS_SERVER}:8080"
+
+# exclude output.txt, output.text is configured for Logstash and contains the same results as the 
+# individual output files to be packaged
+tar -cvzf ${RESULTS_FULL_FILEPATH} --exclude=/data/output.txt /data/*.txt
+echo "Results written to: ${RESULTS_FULL_FILEPATH}"
+
+# try accessing the results web server
+${PING_CMD} ${PING_COUNT_ARG} $(echo ${RESULTS_SERVER} | cut -d: -f1)
+
+# if access to the results web server was successful
+if [ $? -eq 0 ]
+then
+	# send results via curl
+	curl -X POST -H "Content-Type: application/x-tar" --data-binary @${RESULTS_FULL_FILEPATH}  ${WWW_TARGET_HOST}/${DATE_WITH_HOUR}/${JOB_NAME}/${RESULTS_FILENAME}
+fi
 
 #----------------------------------------------------------------------
 # keep the script running so the container has time to write results to logstash

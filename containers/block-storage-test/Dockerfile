@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.2" \
+label version="0.0.3" \
       run="docker run block-storage-test" \
 	  source="" \
 	  description="Block storage test configured to run with a startup scripts that will perform speed test on a specific mount point. Results will be sent to Logstash, results of individual runs will be stored in /home/block-storage/results." \
@@ -10,7 +10,7 @@ label version="0.0.2" \
 	  maintainer="" \
 	  base-image="CentOS 7 Base Image" \	  
 	  name="Block Storage Test" \
-	  build-date="2017-09-15"
+	  build-date="2017-09-26"
 
 # set environment variables
 ENV container block-storage-test

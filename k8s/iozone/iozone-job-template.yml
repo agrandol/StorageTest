@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: iozone-job
-#  namespace: IV
+  namespace: meadowgate
 spec:
   completions: 1
   template:

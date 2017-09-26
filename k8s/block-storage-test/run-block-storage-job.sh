@@ -56,12 +56,12 @@ ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 
 # Stay alive time, default in container is 5 minutes
-STAY_ALIVE_SLEEP_TIME="5m"
+STAY_ALIVE_SLEEP_TIME="10m"
 
 # Create the YAML for the test job
 cat "${BLOCK_STORAGE_JOB_YAML_TEMPLATE}" \
-    | sed "s|__FILE_SIZES__|${FILE_SIZES}|g" \
-    | sed "s|__TEST_END_TIME__|${END_TIME}|g" \
+	| sed "s|__FILE_SIZES__|${FILE_SIZES}|g" \
+	| sed "s|__TEST_END_TIME__|${END_TIME}|g" \
 	| sed "s|__ELASTICSEARCH_HOST__|${ELASTICSEARCH_HOST}|g" \
 	| sed "s|__ELASTICSEARCH_USER__|${ELASTICSEARCH_USER}|g" \
 	| sed "s|__ELASTICSEARCH_PASSWORD|${ELASTICSEARCH_PASSWORD}|g" \
