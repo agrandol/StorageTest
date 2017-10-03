@@ -8,7 +8,6 @@
 
 IOZONE_POD_NAME="iozone-job"
 
-
 #KUBECTL="kubectl" # for local minikube
 KUBECTL="oc"      # for main system, recommended by OpenShift
 
@@ -18,17 +17,17 @@ then
 	${KUBECTL} project meadowgate
 
 	# refresh volume claim
-	${KUBECTL} delete pvc iozone-pvc-ceph
-	${KUBECTL} create -f iozone-pvc-ceph.yml
+#	${KUBECTL} delete pvc iozone-pvc-ceph
+#	${KUBECTL} create -f iozone-pvc-ceph.yml
 fi
 
 # stop previous IOzone jobs
 ${KUBECTL} delete jobs ${IOZONE_POD_NAME}
 
-
 # Useful variables
 IOZONE_STARTUP_WAIT="60s"
-LENGTH_OF_RUN="0 hour"    # minimum test duration, use Linux data notation
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.4"
+LENGTH_OF_RUN="1 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
 END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
 #END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
@@ -39,7 +38,7 @@ IOZONE_JOB_YAML="${CWD}/iozone-job.yml"
 IOZONE_JOB_YAML_TEMPLATE="${CWD}/iozone-job-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-ELASTICSEARCH_HOST="10.0.148.1:9200"
+ELASTICSEARCH_HOST="10.50.100.5:9200"
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 
@@ -48,10 +47,11 @@ STAY_ALIVE_SLEEP_TIME="1m"
 
 # Create the YAML for the test job
 cat "${IOZONE_JOB_YAML_TEMPLATE}" \
+    | sed "s|__CONTAINER_AND_VERSION__|${IOZONE_CONTAINER_AND_VERSION}|g" \
     | sed "s|__TEST_END_TIME__|${END_TIME}|g" \
 	| sed "s|__ELASTICSEARCH_HOST__|${ELASTICSEARCH_HOST}|g" \
 	| sed "s|__ELASTICSEARCH_USER__|${ELASTICSEARCH_USER}|g" \
-	| sed "s|__ELASTICSEARCH_PASSWORD|${ELASTICSEARCH_PASSWORD}|g" \
+	| sed "s|__ELASTICSEARCH_PASSWORD__|${ELASTICSEARCH_PASSWORD}|g" \
 	| sed "s|__STAY_ALIVE_SLEEP_TIME__|${STAY_ALIVE_SLEEP_TIME}|g" \
 	| sed "##/d" \
 	> ${IOZONE_JOB_YAML}

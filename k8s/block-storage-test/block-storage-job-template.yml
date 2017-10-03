@@ -9,17 +9,17 @@ spec:
     metadata:	  
       name: block-storage-job
     spec:
-      volumes:
-#      - name: scp-secret
-#        secret:
-#          secretName: "scp-secret"
-      - name: block-storage-data-volume
-        persistentVolumeClaim: 
-          claimName: block-storage-pvc-ceph
+#      volumes:
+##      - name: scp-secret
+##        secret:
+##          secretName: "scp-secret"
+#      - name: block-storage-data-volume
+#        persistentVolumeClaim: 
+#          claimName: block-storage-pvc-ceph
     
       containers:
       - name: block-storage
-        image: ranada/block-storage-test:latest
+        image: __CONTAINER_AND_VERSION__
         imagePullPolicy: Always
         env:
         - name: FILE_SIZES
@@ -35,9 +35,9 @@ spec:
         - name: STAY_ALIVE_SLEEP_TIME
           value: "__STAY_ALIVE_SLEEP_TIME__"
         volumeMounts:
-#       - name: scp-secret
-#          mountPath: /home/block-storage
-#          readOnly: true
-        - name: block-storage-data-volume
-          mountPath: "/data"
+##       - name: scp-secret
+##          mountPath: /home/block-storage
+##          readOnly: true
+#        - name: block-storage-data-volume
+#          mountPath: "/data"
       restartPolicy: Never

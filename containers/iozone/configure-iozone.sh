@@ -17,13 +17,13 @@ PING_CMD="ping"
 PING_COUNT_ARG="-c 1"
 
 # logstash variables
-LOGSTASH_RPM="logstash.rpm"
+LOGSTASH_RPM="logstash-5.6.2.rpm"
 LOGSTASH_APP="/usr/share/logstash/bin/logstash"
 LOGSTASH_SETTINGS="/etc/logstash"
 LOGSTASH_CONF="logstash.conf"
 
 # set JAVA_HOME, needed for Logstash
-#export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
+export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:/bin/java::")
 
 # if the Elasticsearch host is defined
 if [ -n "${ELASTICSEARCH_HOST}" ]
@@ -143,7 +143,8 @@ done # while loop
 #----------------------------------------------------------------------
 # package results and send to web server
 JOB_NAME="iozone"
-RESULTS_FILENAME="${HOSTNAME}-${JOB_NAME}.tgz"
+DATE_HOUR_MIN=`date "+%Y%m%d-%H%M"`
+RESULTS_FILENAME="${HOSTNAME}-${DATE_HOUR_MIN}.tgz"
 RESULTS_FULL_FILEPATH="${IOZONE_TEST_DIR}/${RESULTS_FILENAME}"
 
 DATE_WITH_HOUR=`date "+%Y%m%d-%H"`

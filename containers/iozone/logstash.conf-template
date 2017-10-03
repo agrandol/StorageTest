@@ -1,9 +1,9 @@
 input {
 	file {
-		path => "/home/iozone/output.txt"
+		path => "/data/output.txt"
 		start_position => "beginning"
 		tags => ["iozone","test"]
-		sincedb_path => "/home/iozone/.sincedb"
+		sincedb_path => "/data/.sincedb"
 	}
 }
 

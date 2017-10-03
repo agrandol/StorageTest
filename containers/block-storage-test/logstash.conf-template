@@ -1,9 +1,9 @@
 input {
 	file {
-		path => "/home/block-storage/output.txt"
+		path => "/data/output.txt"
 		start_position => "beginning"
 		tags => ["blkstore","test"]
-		sincedb_path => "/home/block-storage/.sincedb"
+		sincedb_path => "/data/.sincedb"
 	}
 }
 

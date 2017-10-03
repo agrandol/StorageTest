@@ -6,24 +6,19 @@
 #
 #set -x
 
-
 BLOCK_STORAGE_POD_NAME="block-storage-job"
 
-#KUBECTL="kubectl" # for local minikube
-KUBECTL="oc"      # for main system, recommended by OpenShift
+#KUBECTL="/usr/bin/kubectl" # for local minikube
+KUBECTL="/usr/bin/oc"      # for main system, recommended by OpenShift
 
-if [ "${KUBECTL}" = "oc" ]
+if [ "${KUBECTL}" = "/usr/bin/oc" ]
 then
 	# oc setup to assure running the correct project
 	${KUBECTL} project meadowgate
 
-	# pull the image from Docker hub
-	#${KUBECTL} import-image ranada/block-storage-test --insecure=true --confirm
-	# not needed, YAML pulls latest image from Docker hub
-
 	# refresh volume claim
-	${KUBECTL} delete pvc block-storage-pvc-ceph
-	${KUBECTL} create -f block-storage-pvc-ceph.yml	
+#	${KUBECTL} delete pvc block-storage-pvc-ceph
+#	${KUBECTL} create -f block-storage-pvc-ceph.yml	
 fi
 
 # stop previous block-storage jobs
@@ -40,6 +35,7 @@ FILE_SIZES='102400 1048576 1073741824 10737418240' #  100KB 1MB 1GB 10GB
 
 # Useful variables
 BLOCK_STORAGE_STARTUP_WAIT="60s"
+BLOCK_STORAGE_CONTAINER_AND_VERSION="ranada/block-storage-test:0.0.4"
 LENGTH_OF_RUN="1 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
 END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
@@ -51,7 +47,7 @@ BLOCK_STORAGE_JOB_YAML="${CWD}/block-storage-job.yml"
 BLOCK_STORAGE_JOB_YAML_TEMPLATE="${CWD}/block-storage-job-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-ELASTICSEARCH_HOST="10.0.148.1:9200"
+ELASTICSEARCH_HOST="10.50.100.5:9200"
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 
@@ -60,6 +56,7 @@ STAY_ALIVE_SLEEP_TIME="10m"
 
 # Create the YAML for the test job
 cat "${BLOCK_STORAGE_JOB_YAML_TEMPLATE}" \
+    | sed "s|__CONTAINER_AND_VERSION__|${BLOCK_STORAGE_CONTAINER_AND_VERSION}|g" \
 	| sed "s|__FILE_SIZES__|${FILE_SIZES}|g" \
 	| sed "s|__TEST_END_TIME__|${END_TIME}|g" \
 	| sed "s|__ELASTICSEARCH_HOST__|${ELASTICSEARCH_HOST}|g" \
