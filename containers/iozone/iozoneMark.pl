@@ -9,6 +9,10 @@ use POSIX;
 chomp(my $testDir = $ARGV[0] || `pwd`);
 #my $testDir = '/data';
 
+my $storageName = $ENV{PERSISTENT_STORAGE_NAME} || 'penguin-ceph-storage';
+my $storageVersion = $ENV{PERSISTENT_STORAGE_VERSION} || '1.0.1';
+my $jobName = $ENV{JOB_NAME} || 'iozone';
+
 #--------------------------------------------------------------------
 # IOPS test
 my $origDir = $ENV{PWD} || `pwd`;
@@ -39,7 +43,7 @@ chomp($FS=`stat --file-system --format=%T $tmpDir`);
 #print $FS . "\n";
 
 # record the start time
-chomp(my $testStartTime = `date "+%Y-%m-%d'T'%H:%M:%S"`);
+chomp(my $testStartTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
 chomp(my $startTimestamp = `date "+%Y%m%d-%H%M%S"`);
 
 my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -rlk -s10m -l$procPerThread |";
@@ -71,7 +75,7 @@ system("rm -rf $tmpDir");
 # Bandwidth test
 my $procPerThread = 1;
 my $stat = undef;
-my $kps = 1;
+my $kbps = 1;
 my $bwCnt = 0;
 my $r_kbps = 1;
 my $randomBwCount = 0;
@@ -119,7 +123,7 @@ if ($stat == 0) {
 system("rm -rf $tmpDir");
 
 # record the end time
-chomp(my $testEndTime = `date "+%Y-%m-%d'T'%H:%M:%S"`);
+chomp(my $testEndTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
 
 #--------------------------------------------------------------------
 # Calculate averages
@@ -152,7 +156,10 @@ my $bwUnits = "GB/s";
 
 my $outputString = '{';
 $outputString .= '"metric": "iozone",';
-$outputString .= '"hostname": "' . $hostname . '",';
+$outputString .= '"persistentStorageName": "' . $storageName . '",';
+$outputString .= '"persistentStorageVersion": "' . $storageVersion . '",';
+$outputString .= '"jobname": "' . $jobName . '",';
+$outputString .= '"podname": "' . $hostname . '",';
 $outputString .= '"startTime": "' . $testStartTime . '",';
 $outputString .= '"endTime": "' . $testEndTime . '",';
 $outputString .= '"testDirectory": "' . $testDir . '",';

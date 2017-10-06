@@ -9,13 +9,13 @@ spec:
     metadata:	  
       name: iozone-job
     spec:
-#      volumes:
+      volumes:
 ##      - name: scp-secret
 ##        secret:
 ##          secretName: "scp-secret"
-#      - name: iozone-data-volume
-#        persistentVolumeClaim: 
-#          claimName: iozone-pvc-ceph
+      - name: iozone-data-volume
+        persistentVolumeClaim: 
+          claimName: iozone-pvc-ceph
 
       containers:
       - name: iozone
@@ -32,10 +32,19 @@ spec:
           value: "__ELASTICSEARCH_PASSWORD__"
         - name: STAY_ALIVE_SLEEP_TIME
           value: "__STAY_ALIVE_SLEEP_TIME__"
-#        volumeMounts:
+        - name: LOGSTASH_INDEX
+          value: "__LOGSTASH_INDEX__"
+        - name: PERSISTENT_STORAGE_NAME
+          value: "__PERSISTENT_STORAGE_NAME__"
+        - name: PERSISTENT_STORAGE_VERSION
+          value: "__PERSISTENT_STORAGE_VERSION__"
+        - name: JOB_NAME
+          value: "__JOB_NAME__"
+
+        volumeMounts:
 ##        - name: scp-secret
 ##          mountPath: /home/iozone
 ##          readOnly: true
-#        - name: iozone-data-volume
-#          mountPath: "/data"
+        - name: iozone-data-volume
+          mountPath: "/data"
       restartPolicy: Never

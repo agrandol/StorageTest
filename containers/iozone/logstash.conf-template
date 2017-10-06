@@ -23,6 +23,7 @@ output {
 			hosts => ["__ELASTICSEARCH_HOST__"]
 			user => __ELASTICSEARCH_USER__
 			password => __ELASTICSEARCH_PASSWORD__
+			index => "__LOGSTASH_INDEX__"
 		}
 	}
 }

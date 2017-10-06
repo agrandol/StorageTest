@@ -7,6 +7,9 @@
 #set -x
 
 IOZONE_POD_NAME="iozone-job"
+IOZONE_JOB_NAME=${IOZONE_POD_NAME}
+PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
+PERSISTENT_STORAGE_VERSION="1.0.1"
 
 #KUBECTL="kubectl" # for local minikube
 KUBECTL="oc"      # for main system, recommended by OpenShift
@@ -17,8 +20,8 @@ then
 	${KUBECTL} project meadowgate
 
 	# refresh volume claim
-#	${KUBECTL} delete pvc iozone-pvc-ceph
-#	${KUBECTL} create -f iozone-pvc-ceph.yml
+	${KUBECTL} delete pvc iozone-pvc-ceph
+	${KUBECTL} create -f iozone-pvc-ceph.yml
 fi
 
 # stop previous IOzone jobs
@@ -26,7 +29,7 @@ ${KUBECTL} delete jobs ${IOZONE_POD_NAME}
 
 # Useful variables
 IOZONE_STARTUP_WAIT="60s"
-IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.4"
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.5"
 LENGTH_OF_RUN="1 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
 END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
@@ -34,16 +37,18 @@ END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
 CWD=${PWD}
 
 # YAML files defining execution parameters of the container
-IOZONE_JOB_YAML="${CWD}/iozone-job.yml"
-IOZONE_JOB_YAML_TEMPLATE="${CWD}/iozone-job-template.yml"
+IOZONE_JOB_YAML="${CWD}/${IOZONE_JOB_NAME}.yml"
+IOZONE_JOB_YAML_TEMPLATE="${CWD}/${IOZONE_JOB_NAME}-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
 ELASTICSEARCH_HOST="10.50.100.5:9200"
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
+LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
+LOGSTASH_INDEX="logstash-iozone-${LOGSTASH_DATE}"
 
 # Stay alive time, default in container is 5 minutes
-STAY_ALIVE_SLEEP_TIME="1m"
+STAY_ALIVE_SLEEP_TIME="5m"
 
 # Create the YAML for the test job
 cat "${IOZONE_JOB_YAML_TEMPLATE}" \
@@ -53,6 +58,10 @@ cat "${IOZONE_JOB_YAML_TEMPLATE}" \
 	| sed "s|__ELASTICSEARCH_USER__|${ELASTICSEARCH_USER}|g" \
 	| sed "s|__ELASTICSEARCH_PASSWORD__|${ELASTICSEARCH_PASSWORD}|g" \
 	| sed "s|__STAY_ALIVE_SLEEP_TIME__|${STAY_ALIVE_SLEEP_TIME}|g" \
+	| sed "s|__LOGSTASH_INDEX__|${LOGSTASH_INDEX}|g" \
+	| sed "s|__PERSISTENT_STORAGE_NAME__|${PERSISTENT_STORAGE_NAME}|g" \
+	| sed "s|__PERSISTENT_STORAGE_VERSION__|${PERSISTENT_STORAGE_VERSION}|g" \
+	| sed "s|__JOB_NAME__|${IOZONE_JOB_NAME}|g" \
 	| sed "##/d" \
 	> ${IOZONE_JOB_YAML}
 
