@@ -13,6 +13,14 @@ my $storageName = $ENV{PERSISTENT_STORAGE_NAME} || 'penguin-ceph-storage';
 my $storageVersion = $ENV{PERSISTENT_STORAGE_VERSION} || '1.0.1';
 my $jobName = $ENV{JOB_NAME} || 'iozone';
 
+# arrays to collect results
+my @allIops;
+my @allRandomIops;
+my @allSeqIops;
+my @allBW;
+my @allRandomBW;
+my @allSeqBW;
+
 #--------------------------------------------------------------------
 # IOPS test
 my $origDir = $ENV{PWD} || `pwd`;
@@ -52,14 +60,17 @@ open(F, $cmd);
 while ($_ = <F> ) {
 	chomp($_);
 	m#Parent.* \d+ readers\s*=\s*([\d\.]+)\s+ops/sec# and do {
+		push @allSeqIops, $1;
 		$sequentialIops *= $1;
 		$sequentialIopsCount += 1;
 	};
 	m#Parent.* random readers\s*=\s*([\d\.]+)\s+ops/sec# and do {
+		push @allRandomIops, $1;
 		$randomIops *= $1;
 		$randomIopsCount += 1;
 	};
 	m#Avg throughput per process\s*=\s*([\d\.]+)\s+ops/sec# and do {
+		push @allIops, $1;
 		$iops *= $1;
 		$iopsCnt += 1;
 	};	
@@ -100,16 +111,19 @@ open(F, $cmd);
 while ($_ = <F> ) {
 	chomp($_);
 	m#Parent.* \d+ readers\s*=\s*([\d\.]+)\s+kB/sec# and do {
+		push @allSeqBW, $1;
 		$s_kbps *= $1;
 		$sequentialBwCount += 1;
 		next;
 	};
 	m#Parent.*random readers\s*=\s*([\d\.]+)\s+kB/sec# and do {
+		push @allRandomBW, $1;
 		$r_kbps *= $1;
 		$randomBwCount += 1;
 		next;
 	};
 	m#Avg throughput per process\s*=\s*([\d\.]+)\s+kB/sec# and do {
+		push @allBW, $1;
 		$kbps *= $1;
 		$bwCnt += 1;
 		next;
@@ -154,37 +168,127 @@ my $bwUnits = "GB/s";
 #--------------------------------------------------------------------
 # Output results
 
-my $outputString = '{';
-$outputString .= '"metric": "iozone",';
-$outputString .= '"persistentStorageName": "' . $storageName . '",';
-$outputString .= '"persistentStorageVersion": "' . $storageVersion . '",';
-$outputString .= '"jobname": "' . $jobName . '",';
-$outputString .= '"podname": "' . $hostname . '",';
-$outputString .= '"startTime": "' . $testStartTime . '",';
-$outputString .= '"endTime": "' . $testEndTime . '",';
-$outputString .= '"testDirectory": "' . $testDir . '",';
-$outputString .= '"fileSystemType": "' . $FS . '",';
+my $outputPreamble = '{';
+$outputPreamble .= '"metric": "iozone",';
+$outputPreamble .= '"persistentStorageName": "' . $storageName . '",';
+$outputPreamble .= '"persistentStorageVersion": "' . $storageVersion . '",';
+$outputPreamble .= '"jobname": "' . $jobName . '",';
+$outputPreamble .= '"podname": "' . $hostname . '",';
+$outputPreamble .= '"startTime": "' . $testStartTime . '",';
+$outputPreamble .= '"endTime": "' . $testEndTime . '",';
+$outputPreamble .= '"testDirectory": "' . $testDir . '",';
+$outputPreamble .= '"fileSystemType": "' . $FS . '",';
+
+# remember to add units and test type
+#$outputPreamble .= '"bwUnits": "' . $bwUnits . '"';
+#$outputString .= '"iops": ' . $iopsAvg . ',';
+
+# output the averages found
+my $outputString = $outputPreamble; 
+$outputString .= '"units": "' . $iopsUnits . '",';
 $outputString .= '"iops": ' . $iopsAvg . ',';
-$outputString .= '"sequentialIOPS": ' . $sequentialIopsAvg . ',';
-$outputString .= '"randomIOPS": ' . $randomIopsAvg . ',';
-$outputString .= '"iopsUnits": "' . $iopsUnits . '",';
-$outputString .= '"diskBW": ' . $diskBwAvg . ',';
-$outputString .= '"sequentialBW": ' . $sequentialBwAvg . ',';
-$outputString .= '"randomBW": ' . $randomBwAvg . ',';
-$outputString .= '"bwUnits": "' . $bwUnits . '"';
-$outputString .= '}';
-print $outputString, "\n";
+$outputString .= '"type": "iopsAvg"';
+$outputString .= '}' . "\n";
+
+$outputString .= $outputPreamble; 
+$outputString .= '"units": "' . $iopsUnits . '",';
+$outputString .= '"iops": ' . $sequentialIopsAvg . ',';
+$outputString .= '"type": "sequentialIopsAvg"';
+$outputString .= '}' . "\n";
+
+$outputString .= $outputPreamble; 
+$outputString .= '"units": "' . $iopsUnits . '",';
+$outputString .= '"iops": ' . $randomIopsAvg . ',';
+$outputString .= '"type": "randomIopsAvg"';
+$outputString .= '}' . "\n";
+
+$outputString .= $outputPreamble; 
+$outputString .= '"units": "' . $bwUnits . '",';
+$outputString .= '"bw": ' . $diskBwAvg . ',';
+$outputString .= '"type": "bwAvg"';
+$outputString .= '}' . "\n";
+
+$outputString .= $outputPreamble; 
+$outputString .= '"units": "' . $bwUnits . '",';
+$outputString .= '"bw": ' . $sequentialBwAvg . ',';
+$outputString .= '"type": "sequentialBwAvg"';
+$outputString .= '}' . "\n";
+
+$outputString .= $outputPreamble; 
+$outputString .= '"units": "' . $bwUnits . '",';
+$outputString .= '"bw": ' . $randomBwAvg . ',';
+$outputString .= '"type": "randomBwAvg"';
+$outputString .= '}' . "\n";
+
+#print "allIops\n";
+foreach (@allIops) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $iopsUnits . '",';
+    $outputString .= '"iops": ' . $_ . ',';
+    $outputString .= '"type": "iops"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+#print "allRandomIops\n";
+foreach (@allRandomIops) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $iopsUnits . '",';
+    $outputString .= '"iops": ' . $_ . ',';
+    $outputString .= '"type": "randomlIops"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+#print "allSeqIops\n";
+foreach (@allSeqIops) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $iopsUnits . '",';
+    $outputString .= '"iops": ' . $_ . ',';
+    $outputString .= '"type": "sequentialIops"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+#print "allBW\n";
+foreach (@allBW) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $bwUnits . '",';
+    $outputString .= '"bw": ' . $_ . ',';
+    $outputString .= '"type": "bw"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+#print "allRandomBW\n";
+foreach (@allRandomBW) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $bwUnits . '",';
+    $outputString .= '"bw": ' . $_ . ',';
+    $outputString .= '"type": "randomBw"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+#print "allSeqBW\n";
+foreach (@allSeqBW) {
+    $outputString .= $outputPreamble; 
+    $outputString .= '"units": "' . $bwUnits . '",';
+    $outputString .= '"bw": ' . $_ . ',';
+    $outputString .= '"type": "sequentialBw"';
+    $outputString .= '}' . "\n";    
+    #print "$_\n";
+}
+
+print $outputString;
 
 # write the output file that will be processed by Logstash
 #my $filename = "output.txt";
 my $filename = "$testDir/output.txt";
 open FILE, ">> $filename" or die "Could not open $filename";
-print FILE $outputString, "\n";
+print FILE $outputString;
 close FILE;
 
+=comment
 # write an individual file for each run using the hostname and timestamp
 #my $individualOutputFile = "./results/" . $hostname . "-" . $startTimestamp . ".txt";
 my $individualOutputFile = "$testDir/" . $hostname . "-" . $startTimestamp . ".txt";
 open RESULTFILE, "> $individualOutputFile" or die "Could not open $individualOutputFile";
 print RESULTFILE $outputString, "\n";
 close RESULTFILE;
+=cut

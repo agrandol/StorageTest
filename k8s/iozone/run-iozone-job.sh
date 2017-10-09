@@ -29,8 +29,8 @@ ${KUBECTL} delete jobs ${IOZONE_POD_NAME}
 
 # Useful variables
 IOZONE_STARTUP_WAIT="60s"
-IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.5"
-LENGTH_OF_RUN="1 hour"    # minimum test duration, use Linux data notation
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.6"
+LENGTH_OF_RUN="5 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
 END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
 #END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
@@ -46,6 +46,7 @@ ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
 LOGSTASH_INDEX="logstash-iozone-${LOGSTASH_DATE}"
+#LOGSTASH_INDEX="logstash-iozone-test"
 
 # Stay alive time, default in container is 5 minutes
 STAY_ALIVE_SLEEP_TIME="5m"
