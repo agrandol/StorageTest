@@ -8,6 +8,10 @@ use POSIX;
 # input arguments, where the test should run
 chomp(my $testDir = $ARGV[0] || `pwd`);
 #my $testDir = '/data';
+chomp(my $testFileSize = $ARGV[1] || '10m');
+chomp(my $testCacheSize = $ARGV[2] || '4');
+chomp(my $testRecordSize = $ARGV[3] || '4k');
+chomp(my $testNumThreads = $ARGV[4] || '8');
 
 my $storageName = $ENV{PERSISTENT_STORAGE_NAME} || 'penguin-ceph-storage';
 my $storageVersion = $ENV{PERSISTENT_STORAGE_VERSION} || '1.0.1';
@@ -24,7 +28,8 @@ my @allSeqBW;
 #--------------------------------------------------------------------
 # IOPS test
 my $origDir = $ENV{PWD} || `pwd`;
-my $procPerThread = 2;
+#my $procPerThread = 2;
+#my $procPerThread = 1;
 my $stat = 0;
 my $iops = 1;
 my $iopsCnt = 0;
@@ -32,6 +37,7 @@ my $randomIops = 1;
 my $randomIopsCount = 0;
 my $sequentialIops = 1;
 my $sequentialIopsCount = 0;
+my $iopsIOzoneCmd = '';
 
 # We need to run this in a unique sub-directory because of the temp files the benchmark creates
 chomp(my $hostname = `hostname`);
@@ -54,11 +60,15 @@ chomp($FS=`stat --file-system --format=%T $tmpDir`);
 chomp(my $testStartTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
 chomp(my $startTimestamp = `date "+%Y%m%d-%H%M%S"`);
 
-my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -rlk -s10m -l$procPerThread |";
+#my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -rlk -s10m -l$procPerThread |";
+my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
 print("[RUN] $cmd\n");
 open(F, $cmd);
 while ($_ = <F> ) {
 	chomp($_);
+	m#\s*Command line used:\s*(.+?.+)# and do {
+        $iopsIOzoneCmd = $1;
+	};
 	m#Parent.* \d+ readers\s*=\s*([\d\.]+)\s+ops/sec# and do {
 		push @allSeqIops, $1;
 		$sequentialIops *= $1;
@@ -84,7 +94,7 @@ system("rm -rf $tmpDir");
 
 #--------------------------------------------------------------------
 # Bandwidth test
-my $procPerThread = 1;
+#my $procPerThread = 1;
 my $stat = undef;
 my $kbps = 1;
 my $bwCnt = 0;
@@ -92,6 +102,7 @@ my $r_kbps = 1;
 my $randomBwCount = 0;
 my $s_kbps = 1;
 my $sequentialBwCount = 0;
+my $bwIOzoneCmd = '';
 
 # We need to run this in a unique sub-directory because of the temp files the benchmark creates
 $stat = mkdir($tmpDir);
@@ -105,11 +116,17 @@ if ($stat == 0) {
 	exit(1);
 }
 
-my $cmd = "$origDir/iozone3_469/src/current/iozone -o -c -rlm -s30m -l$procPerThread |";
+#my $cmd = "$origDir/iozone3_469/src/current/iozone -o -c -rlm -s30m -l$procPerThread |";
+#my $cmd = "$origDir/iozone3_469/src/current/iozone -o -rlk -s10m -l$procPerThread |";
+my $cmd = "$origDir/iozone3_469/src/current/iozone -o -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
+
 print("[RUN] $cmd\n");
 open(F, $cmd);
 while ($_ = <F> ) {
 	chomp($_);
+	m#\s*Command line used:\s*(.+?.+)# and do {
+        $bwIOzoneCmd = $1;
+	};
 	m#Parent.* \d+ readers\s*=\s*([\d\.]+)\s+kB/sec# and do {
 		push @allSeqBW, $1;
 		$s_kbps *= $1;
@@ -178,6 +195,10 @@ $outputPreamble .= '"startTime": "' . $testStartTime . '",';
 $outputPreamble .= '"endTime": "' . $testEndTime . '",';
 $outputPreamble .= '"testDirectory": "' . $testDir . '",';
 $outputPreamble .= '"fileSystemType": "' . $FS . '",';
+$outputPreamble .= '"testFileSize": "' . $testFileSize . '",';
+$outputPreamble .= '"testCacheSize": "' . $testCacheSize . 'k",';
+$outputPreamble .= '"testRecordSize": "' . $testRecordSize . '",';
+$outputPreamble .= '"testNumThreads": ' . $testNumThreads . ',';
 
 # remember to add units and test type
 #$outputPreamble .= '"bwUnits": "' . $bwUnits . '"';
@@ -185,36 +206,42 @@ $outputPreamble .= '"fileSystemType": "' . $FS . '",';
 
 # output the averages found
 my $outputString = $outputPreamble; 
+$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
 $outputString .= '"units": "' . $iopsUnits . '",';
 $outputString .= '"iops": ' . $iopsAvg . ',';
 $outputString .= '"type": "iopsAvg"';
 $outputString .= '}' . "\n";
 
-$outputString .= $outputPreamble; 
+$outputString .= $outputPreamble;
+$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
 $outputString .= '"units": "' . $iopsUnits . '",';
 $outputString .= '"iops": ' . $sequentialIopsAvg . ',';
 $outputString .= '"type": "sequentialIopsAvg"';
 $outputString .= '}' . "\n";
 
-$outputString .= $outputPreamble; 
+$outputString .= $outputPreamble;
+$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
 $outputString .= '"units": "' . $iopsUnits . '",';
 $outputString .= '"iops": ' . $randomIopsAvg . ',';
 $outputString .= '"type": "randomIopsAvg"';
 $outputString .= '}' . "\n";
 
-$outputString .= $outputPreamble; 
+$outputString .= $outputPreamble;
+$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
 $outputString .= '"units": "' . $bwUnits . '",';
 $outputString .= '"bw": ' . $diskBwAvg . ',';
 $outputString .= '"type": "bwAvg"';
 $outputString .= '}' . "\n";
 
-$outputString .= $outputPreamble; 
+$outputString .= $outputPreamble;
+$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
 $outputString .= '"units": "' . $bwUnits . '",';
 $outputString .= '"bw": ' . $sequentialBwAvg . ',';
 $outputString .= '"type": "sequentialBwAvg"';
 $outputString .= '}' . "\n";
 
-$outputString .= $outputPreamble; 
+$outputString .= $outputPreamble;
+$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
 $outputString .= '"units": "' . $bwUnits . '",';
 $outputString .= '"bw": ' . $randomBwAvg . ',';
 $outputString .= '"type": "randomBwAvg"';
@@ -222,7 +249,8 @@ $outputString .= '}' . "\n";
 
 #print "allIops\n";
 foreach (@allIops) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
     $outputString .= '"units": "' . $iopsUnits . '",';
     $outputString .= '"iops": ' . $_ . ',';
     $outputString .= '"type": "iops"';
@@ -231,7 +259,8 @@ foreach (@allIops) {
 }
 #print "allRandomIops\n";
 foreach (@allRandomIops) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
     $outputString .= '"units": "' . $iopsUnits . '",';
     $outputString .= '"iops": ' . $_ . ',';
     $outputString .= '"type": "randomlIops"';
@@ -240,7 +269,8 @@ foreach (@allRandomIops) {
 }
 #print "allSeqIops\n";
 foreach (@allSeqIops) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $iopsIOzoneCmd . '",';
     $outputString .= '"units": "' . $iopsUnits . '",';
     $outputString .= '"iops": ' . $_ . ',';
     $outputString .= '"type": "sequentialIops"';
@@ -249,7 +279,8 @@ foreach (@allSeqIops) {
 }
 #print "allBW\n";
 foreach (@allBW) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
     $outputString .= '"units": "' . $bwUnits . '",';
     $outputString .= '"bw": ' . $_ . ',';
     $outputString .= '"type": "bw"';
@@ -258,7 +289,8 @@ foreach (@allBW) {
 }
 #print "allRandomBW\n";
 foreach (@allRandomBW) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
     $outputString .= '"units": "' . $bwUnits . '",';
     $outputString .= '"bw": ' . $_ . ',';
     $outputString .= '"type": "randomBw"';
@@ -267,7 +299,8 @@ foreach (@allRandomBW) {
 }
 #print "allSeqBW\n";
 foreach (@allSeqBW) {
-    $outputString .= $outputPreamble; 
+    $outputString .= $outputPreamble;
+	$outputString .= '"iozoneCmd": "' . $bwIOzoneCmd . '",';
     $outputString .= '"units": "' . $bwUnits . '",';
     $outputString .= '"bw": ' . $_ . ',';
     $outputString .= '"type": "sequentialBw"';

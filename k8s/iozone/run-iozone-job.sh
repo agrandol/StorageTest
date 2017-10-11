@@ -11,6 +11,11 @@ IOZONE_JOB_NAME=${IOZONE_POD_NAME}
 PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
 PERSISTENT_STORAGE_VERSION="1.0.1"
 
+# IOzone parameters
+FILE_SIZES='200g'        #'10m'  # for small tests
+CACHE_SIZES='4 8 16 32'  # note: these are in k; the record size will be set to the same value
+NUMBER_OF_THREADS='8'
+
 #KUBECTL="kubectl" # for local minikube
 KUBECTL="oc"      # for main system, recommended by OpenShift
 
@@ -29,8 +34,8 @@ ${KUBECTL} delete jobs ${IOZONE_POD_NAME}
 
 # Useful variables
 IOZONE_STARTUP_WAIT="60s"
-IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.6"
-LENGTH_OF_RUN="5 hour"    # minimum test duration, use Linux data notation
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.7"
+LENGTH_OF_RUN="0 hour"    # minimum test duration, use Linux data notation
                           # that will add time to the time the test started
 END_TIME=$(date -ud "+${LENGTH_OF_RUN}" "+%m%d%H%M")
 #END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
@@ -46,7 +51,7 @@ ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
 LOGSTASH_INDEX="logstash-iozone-${LOGSTASH_DATE}"
-#LOGSTASH_INDEX="logstash-iozone-test"
+#LOGSTASH_INDEX="logstash-iozone-test1"
 
 # Stay alive time, default in container is 5 minutes
 STAY_ALIVE_SLEEP_TIME="5m"
@@ -63,6 +68,9 @@ cat "${IOZONE_JOB_YAML_TEMPLATE}" \
 	| sed "s|__PERSISTENT_STORAGE_NAME__|${PERSISTENT_STORAGE_NAME}|g" \
 	| sed "s|__PERSISTENT_STORAGE_VERSION__|${PERSISTENT_STORAGE_VERSION}|g" \
 	| sed "s|__JOB_NAME__|${IOZONE_JOB_NAME}|g" \
+	| sed "s|__FILE_SIZES__|${FILE_SIZES}|g" \
+	| sed "s|__CACHE_SIZES__|${CACHE_SIZES}|g" \
+	| sed "s|__NUMBER_OF_THREADS__|${NUMBER_OF_THREADS}|g" \
 	| sed "##/d" \
 	> ${IOZONE_JOB_YAML}
 

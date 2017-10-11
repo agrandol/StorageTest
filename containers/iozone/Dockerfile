@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.6" \
+label version="0.0.7" \
       run="docker run iozone" \
 	  source="" \
 	  description="IOzone benchmark container that executes IOPS and Bandwidth test on a specific mount point. Results can be sent to Logstash, results of individual runs will be stored in /home/iozone/results." \
@@ -11,7 +11,7 @@ label version="0.0.6" \
 	  base-image="CentOS 7 Base Image" \
 	  test-source="http://www.iozone.org/" \
 	  name="IOzone test" \
-	  build-date="2017-10-06"
+	  build-date="2017-10-11"
 
 # set environment variables
 ENV container iozone-test
