@@ -1,13 +1,13 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: iozone-job
-  namespace: meadowgate
+  name: __JOB_NAME__
+  namespace: __NAMESPACE__
 spec:
-  completions: 1
+  completions: __COMPLETIONS__
   template:
     metadata:	  
-      name: iozone-job
+      name: __JOB_NAME__
     spec:
       volumes:
 ##      - name: scp-secret
@@ -15,7 +15,7 @@ spec:
 ##          secretName: "scp-secret"
       - name: iozone-data-volume
         persistentVolumeClaim: 
-          claimName: iozone-pvc-ceph
+          claimName: __PVC_NAME__
 
       containers:
       - name: iozone
