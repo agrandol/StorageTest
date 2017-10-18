@@ -5,10 +5,10 @@
 #set -x
 PERL="/usr/bin/perl"
 
-SIZES='10m' # 200g' 
-CACHE='4 8'
+SIZES='10m' # 500m' 
+CACHE='4' #8 16 32'
 #RECORD_SIZES='4k 8k 16k 32k'
-NUM_THREADS='8'
+NUM_THREADS='1' #'8'
 
 #TEST_FILE_SIZE="10m"
 #TEST_CACHE_SIZE="8"
@@ -52,8 +52,8 @@ do
     for TEST_CACHE_SIZE in ${CACHE}
     do
         # align record size and cache size, need to add the k to record size
-        TEST_RECORD_SIZE=${TEST_CACHE_SIZE}k
-        echo "Test cache and record size is: ${TEST_CACHE_SIZE}"
+        TEST_RECORD_SIZE="${TEST_CACHE_SIZE}k"
+        echo "Test cache and record size is: ${TEST_CACHE_SIZE}k"
 
         for TEST_NUM_THREADS in ${NUM_THREADS}
         do

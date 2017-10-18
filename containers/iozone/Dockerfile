@@ -14,7 +14,8 @@ label version="0.0.8" \
 	  build-date="2017-10-17"
 
 # set environment variables
-ENV container iozone-test
+ENV CONTAINER iozone
+ENV CONTAINER_VERSION "0.0.8"
 ENV HOME_DIR /home/iozone
 ENV DATA_DIR /data
 
@@ -41,7 +42,7 @@ COPY logstash-5.6.2.rpm /home/iozone/
 
 # copy the IOzone benchmark files to the container
 COPY iozoneMark.pl /home/iozone/
-COPY simpleIozoneMark.pl /home/iozone/
+#COPY simpleIozoneMark.pl /home/iozone/
 COPY configure-iozone.sh /home/iozone/
 COPY run-iozone.sh /home/iozone/
 COPY logstash.conf-template /home/iozone/

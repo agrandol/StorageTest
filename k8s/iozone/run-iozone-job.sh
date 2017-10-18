@@ -4,7 +4,7 @@
 #
 # Run the IOzone metric container as a job
 #
-#set -x
+set -x
 
 usage() {
 	echo "Start one or many jobs based on optional command line arguments supplied"
@@ -43,15 +43,15 @@ PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
 PERSISTENT_STORAGE_VERSION="1.0.1"
 IOZONE_STARTUP_WAIT="60s"
 JOB_START_WAIT="5s"
-IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.7"
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.8"
 JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
                         # that will add time to the time the test started
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
 
 # IOzone parameters
 FILE_SIZES='10m'        #'10m'  # for small tests, assume one file size will be used for now
-CACHE_SIZES='4 8 16 32'  # note: these are in k; the record size will be set to the same value
-NUMBER_OF_THREADS='8'
+CACHE_SIZES='4' # 8 16 32'  # note: these are in k; the record size will be set to the same value
+NUMBER_OF_THREADS='1' #'8'
 
 # Process command line arguments
 while [ "$1" != "" ]; do
@@ -96,8 +96,8 @@ while [ "$1" != "" ]; do
 done
 
 # k8s commands
-KUBECTL="kubectl" # for local minikube on Mac
-#KUBECTL="oc"      # for main system, recommended by OpenShift
+#KUBECTL="kubectl" # for local minikube on Mac
+KUBECTL="oc"      # for main system, recommended by OpenShift
 
 if [ "${KUBECTL}" = "oc" ]
 then
@@ -123,7 +123,8 @@ IOZONE_JOB_YAML_TEMPLATE="${CWD}/${IOZONE_JOB_NAME}-template.yml"
 PVC_YAML_TEMPLATE="${CWD}/iozone-pvc-ceph-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-ELASTICSEARCH_HOST="10.50.100.5:9200"
+#ELASTICSEARCH_HOST="10.50.100.5:9200"
+ELASTICSEARCH_HOST=
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
@@ -138,7 +139,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	# delete previous IOzone job with same name
 	${KUBECTL} delete jobs ${JOB_TO_RUN}
 
-	# update the PVC allocation YAML
+	# set PVC parameters
 	PVC_NAME="iozone-pvc-ceph-$i"
 	PVC_YAML="${CWD}/iozone-pvc-ceph-$i.yml"
 
@@ -149,6 +150,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	FILE_SIZE_UNITS=$(echo ${FILE_SIZES} | sed 's/[^a-zA-Z]*//g')
 	PVC_UNITS="$(echo ${FILE_SIZE_UNITS} | tr '[:lower:]' '[:upper:]')i"
 	PVC_SIZE="${PVC_SIZE}${PVC_UNITS}"
+	echo "PVC size set to: ${PVC_SIZE}"
 
 	# create the YAML for the PVC
 	cat "${PVC_YAML_TEMPLATE}" \
@@ -158,7 +160,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		> ${PVC_YAML}
 
 	# delete previous claim and submit new claim
-	#echo ${PVC_NAME}
+	echo "Creating claim: ${PVC_NAME}"
 	${KUBECTL} delete pvc ${PVC_NAME}
 	${KUBECTL} create -f ${PVC_YAML}
 	
@@ -187,6 +189,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		> ${IOZONE_JOB_YAML}
 
 	# Start the IOzone test
+	echo "Starting job: ${JOB_TO_RUN}"
 	${KUBECTL} create -f ${IOZONE_JOB_YAML}
 
 	# allow the job to start before attempting another job start
@@ -194,7 +197,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 done  # end of job creation loop
 
 # wait for all jobs to start
-sleep ${IOZONE_STARTUP_WAIT}
+#sleep ${IOZONE_STARTUP_WAIT}
 
 # rethink how to view the running pods as part of this script
 # for now, just exit
