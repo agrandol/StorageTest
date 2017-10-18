@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sample-container-job
+  namespace: meadowgate
+spec:
+  completions: 1
+  template:
+    metadata:	  
+      name: sample-container-job
+    spec:
+      volumes:
+##      - name: scp-secret
+##        secret:
+##          secretName: "scp-secret"
+      - name: sample-data-volume
+        persistentVolumeClaim: 
+          claimName: sample-pvc-ceph
+
+      containers:
+      - name: sample-container
+        image: ranada/sample-container:0.0.1
+        imagePullPolicy: Always
+
+        volumeMounts:
+##        - name: scp-secret
+##          mountPath: /home/iozone
+##          readOnly: true
+        - name: sample-data-volume
+          mountPath: "/data"
+      restartPolicy: Never

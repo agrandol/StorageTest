@@ -4,7 +4,7 @@
 #
 # Run the IOzone metric container as a job
 #
-set -x
+#set -x
 
 usage() {
 	echo "Start one or many jobs based on optional command line arguments supplied"
@@ -12,8 +12,8 @@ usage() {
 	echo "  -c, --completions <COMPLETIONS>  the number of completions per job."
 	echo "  -d, --duration <DURATION>>       the minimum job duration, use Linux date notation."
 	echo "                                   The value entered will be added to the time started."
-	echo "                                   Examples include \"0 hour\" to run once, \"5 hour\","
-	echo "                                   will run for 5 hours".
+	echo "                                   Examples include \"0 hour\" to run once, \"5 hour\" will"
+	echo "                                   run for 5 hours."
 	echo "  -j, --jobs <JOBS>                the number of jobs to run."	
 	echo "  -n, --namespace <NAMESPACE>      the namespace that should be used for the run."	
 	echo "  -s, --sleep <STAY_ALIVE_TIME>    the amount of time to sleep when the job completes to " 
@@ -49,13 +49,9 @@ JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
 
 # IOzone parameters
-FILE_SIZES='200m'        #'10m'  # for small tests, assume one file size will be used for now
+FILE_SIZES='10m'        #'10m'  # for small tests, assume one file size will be used for now
 CACHE_SIZES='4 8 16 32'  # note: these are in k; the record size will be set to the same value
 NUMBER_OF_THREADS='8'
-
-# Commands
-KUBECTL="kubectl" # for local minikube
-#KUBECTL="oc"      # for main system, recommended by OpenShift
 
 # Process command line arguments
 while [ "$1" != "" ]; do
@@ -99,15 +95,20 @@ while [ "$1" != "" ]; do
 	shift
 done
 
+# k8s commands
+KUBECTL="kubectl" # for local minikube on Mac
+#KUBECTL="oc"      # for main system, recommended by OpenShift
+
 if [ "${KUBECTL}" = "oc" ]
 then
 	# oc setup to assure running the correct project
 	${KUBECTL} project ${K8S_NAMESPACE}
+	END_TIME=$(date -ud "+${JOB_DURATION}" "+%m%d%H%M")
 
-	# refresh volume claim
-	# now done in loop below
-#	${KUBECTL} delete pvc iozone-pvc-ceph
-#	${KUBECTL} create -f iozone-pvc-ceph.yml
+else
+	# running local minikube on Mac
+	${KUBECTL} project default
+	END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
 fi
 
 # stop previous IOzone jobs
@@ -115,8 +116,6 @@ fi
 #${KUBECTL} delete jobs ${IOZONE_POD_NAME}
 
 # Useful variables
-END_TIME=$(date -ud "+${JOB_DURATION}" "+%m%d%H%M")
-#END_TIME=$(date -u  "+%m%d%H%M")   # when running on MacOS, -d does not work
 CWD=${PWD}
 
 # Template YAML files
@@ -130,7 +129,6 @@ ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
 LOGSTASH_INDEX="logstash-iozone-${LOGSTASH_DATE}"
 #LOGSTASH_INDEX="logstash-iozone-test1"
-
 
 # for all jobs to run
 for i in `seq 1 ${NUMBER_OF_JOBS}`; do
@@ -147,7 +145,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	# find the PVC size
 	ALLOCATION_FACTOR="2"
 	TEST_FILE_SIZE=$(echo ${FILE_SIZES} | sed 's/[^0-9]*//g')
-	PVC_SIZE=$((${TEST_FILE_SIZE} * ${ALLOCATION_FACTOR}))
+	PVC_SIZE=$((${TEST_FILE_SIZE} * ${ALLOCATION_FACTOR} * ${NUMBER_OF_THREADS}))
 	FILE_SIZE_UNITS=$(echo ${FILE_SIZES} | sed 's/[^a-zA-Z]*//g')
 	PVC_UNITS="$(echo ${FILE_SIZE_UNITS} | tr '[:lower:]' '[:upper:]')i"
 	PVC_SIZE="${PVC_SIZE}${PVC_UNITS}"
@@ -195,12 +193,13 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	sleep ${JOB_START_WAIT}
 done  # end of job creation loop
 
+# wait for all jobs to start
+sleep ${IOZONE_STARTUP_WAIT}
+
 # rethink how to view the running pods as part of this script
 # for now, just exit
 exit
 
-# wait for all jobs to start
-sleep ${IOZONE_STARTUP_WAIT}
 
 # find running pods
 IOZONE_POD=`${KUBECTL} get --no-headers=true pods -o wide | grep ${IOZONE_POD_NAME} | grep Running | awk '{print $1}'`

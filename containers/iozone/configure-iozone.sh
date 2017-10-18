@@ -95,18 +95,7 @@ then
 fi
 
 #----------------------------------------------------------------------
-# if a mount device and an IOzone test directory has been set
-##### 
-# Test this block with a real device, change or delete as needed
-#####
-#if [ -n "${MOUNT_DEVICE}" ] && [ -n "${IOZONE_TEST_DIR}" ]
-#then
-#	# create the local directory for the mount
-#	mkdir -p ${IOZONE_TEST_DIR}
-#	
-#	# mount the directory
-#	mount ${MOUNT_DEVICE} ${IOZONE_TEST_DIR}
-#fi
+# set the results directory
 
 IOZONE_TEST_DIR="/data";
 
@@ -133,6 +122,7 @@ cd ${WORKING_PWD}
 #----------------------------------------------------------------------
 # start the IOzone test
 CONTINUE_TEST="TRUE"
+echo "Starting IOzone test"
 while [ "${CONTINUE_TEST}" = "TRUE" ]
 do
 	. ${CWD}/run-iozone.sh

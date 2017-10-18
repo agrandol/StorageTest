@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sample-container-job
+  namespace: meadowgate
+spec:
+  completions: 1
+  template:
+    metadata:	  
+      name: sample-container-job
+    spec:
+      containers:
+      - name: sample-container
+        image: ranada/sample-container:0.0.1
+        imagePullPolicy: Always
+
+      restartPolicy: Never

@@ -11,7 +11,14 @@ chomp(my $testDir = $ARGV[0] || `pwd`);
 chomp(my $testFileSize = $ARGV[1] || '10m');
 chomp(my $testCacheSize = $ARGV[2] || '4');
 chomp(my $testRecordSize = $ARGV[3] || '4k');
-chomp(my $testNumThreads = $ARGV[4] || '8');
+chomp(my $testNumThreads = $ARGV[4] || '1');
+
+# the above are smaller defaults for quick testing
+# another set of defaults for longer tests are:
+# $testFileSize = '100m';
+# $testCacheSize '4';
+# $testRecordSize = '4k';
+# $testNumThreads = '8';
 
 my $storageName = $ENV{PERSISTENT_STORAGE_NAME} || 'penguin-ceph-storage';
 my $storageVersion = $ENV{PERSISTENT_STORAGE_VERSION} || '1.0.1';
@@ -86,6 +93,7 @@ while ($_ = <F> ) {
 	};	
 }
 close(F);
+print("Completing run\n");
 $stat = chdir("$origDir");
 if ($stat == 0) {
 	perror('chdir ' . $origDir);
@@ -147,6 +155,7 @@ while ($_ = <F> ) {
 	};
 }
 close(F);
+print("Completing run\n");
 $stat = chdir("$origDir");
 if ($stat == 0) {
 	perror('chdir ' . $origDir);
@@ -155,6 +164,8 @@ system("rm -rf $tmpDir");
 
 # record the end time
 chomp(my $testEndTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
+
+print("Calculating averages\n");
 
 #--------------------------------------------------------------------
 # Calculate averages
@@ -184,6 +195,7 @@ my $bwUnits = "GB/s";
 
 #--------------------------------------------------------------------
 # Output results
+print("Output results\n");
 
 my $outputPreamble = '{';
 $outputPreamble .= '"metric": "iozone",';

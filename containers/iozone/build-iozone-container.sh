@@ -7,7 +7,7 @@
 #set -x
 
 CONTAINER_NAME="iozone"
-CONTAINER_IMAGE="0.0.7"
+CONTAINER_IMAGE="0.0.8"
 REPO_AND_NAME="ranada/${CONTAINER_NAME}:${CONTAINER_IMAGE}"
 RPM_DIRECTORY="../../elk-rpms"
 LOGSTASH_RPM="logstash-5.6.2.rpm"            # set actual name of rpm file

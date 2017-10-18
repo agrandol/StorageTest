@@ -15,6 +15,9 @@ NUM_THREADS='8'
 #TEST_RECORD_SIZE="8k"
 #TEST_NUM_THREADS="8"
 
+# display filesystem information
+df -hT
+
 if [ -n "${FILE_SIZES}" ] # FILE_SIZES defined in environment passed in
 then
 	echo "Setting file sizes to: ${FILE_SIZES}"
@@ -33,15 +36,24 @@ then
 	NUM_THREADS=${NUMBER_OF_THREADS}
 fi
 
+#TEST_RECORD_SIZE="${TEST_CACHE_SIZE}k"
+#${PERL} simpleIozoneMark.pl ${IOZONE_TEST_DIR}
+#sleep 2m
+#exit
+
+
+
 # for all test sizes to test
 for TEST_FILE_SIZE in ${SIZES}
 do
+    echo "Test file size is: ${TEST_FILE_SIZE}"
     # for all cache sizes
     # cache size is in k
     for TEST_CACHE_SIZE in ${CACHE}
     do
         # align record size and cache size, need to add the k to record size
         TEST_RECORD_SIZE=${TEST_CACHE_SIZE}k
+        echo "Test cache and record size is: ${TEST_CACHE_SIZE}"
 
         for TEST_NUM_THREADS in ${NUM_THREADS}
         do
