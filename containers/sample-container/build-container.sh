@@ -7,7 +7,7 @@
 #set -x
 
 CONTAINER_NAME="sample-container"
-CONTAINER_IMAGE="0.0.1"
+CONTAINER_IMAGE="0.0.2"
 REPO_AND_NAME="ranada/${CONTAINER_NAME}:${CONTAINER_IMAGE}"
 
 CWD=`pwd`

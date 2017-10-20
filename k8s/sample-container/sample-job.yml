@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: sample-container
-        image: ranada/sample-container:0.0.1
+        image: ranada/sample-container:0.0.2
         imagePullPolicy: Always
 
       restartPolicy: Never

@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.1" \
+label version="0.0.2" \
       run="docker run sample-container" \
 	  source="" \
 	  description="Sample container to verify base configuration and operation." \
@@ -10,11 +10,13 @@ label version="0.0.1" \
 	  maintainer="" \
 	  base-image="CentOS 7 Base Image" \	  
 	  name="Sample Container" \
-	  build-date="2017-10-17"
+	  build-date="2017-10-19"
 
 # set environment variables
-ENV container centos-sample
+ENV CONTAINER_NAME centos-sample
+ENV CONTAINER_VERSION "0.0.2"
 ENV HOME_DIR /home/test
+ENV DATA_DIR /data
 
 # perform yum installs
 RUN yum -y update; yum clean all

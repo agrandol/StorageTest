@@ -4,7 +4,7 @@
 #
 # Run the IOzone metric container as a job
 #
-set -x
+#set -x
 
 usage() {
 	echo "Start one or many jobs based on optional command line arguments supplied"
@@ -123,8 +123,8 @@ IOZONE_JOB_YAML_TEMPLATE="${CWD}/${IOZONE_JOB_NAME}-template.yml"
 PVC_YAML_TEMPLATE="${CWD}/iozone-pvc-ceph-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-#ELASTICSEARCH_HOST="10.50.100.5:9200"
-ELASTICSEARCH_HOST=
+ELASTICSEARCH_HOST="10.50.100.5:9200"
+#ELASTICSEARCH_HOST=
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`

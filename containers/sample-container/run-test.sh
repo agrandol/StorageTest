@@ -19,6 +19,8 @@ do
     FILENAME="${DATA_DIR}/sample-file-$i.text"
     echo "Writing content to: ${FILENAME}"
     echo "Sample content for file $i" > ${FILENAME}
+    echo "The text below is random text to fill the file" >> ${FILENAME}
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 2048 | head -n 2048 >> ${FILENAME}
     sleep ${LOOP_SLEEP}
 done
 
@@ -29,9 +31,14 @@ FILES="${DATA_DIR}/*"
 for f in $FILES
 do
     echo "Processing $f file..."
-    cat $f
+    wc -l $f
+    #cat $f
     echo ""
 done
+
+echo ""
+echo "File system information"
+df -hT
 
 echo "Sleeping for ${STAY_ALIVE_SLEEP_TIME}, gather results" 
 sleep ${STAY_ALIVE_SLEEP_TIME}
