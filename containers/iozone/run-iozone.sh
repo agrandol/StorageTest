@@ -36,12 +36,6 @@ then
 	NUM_THREADS=${NUMBER_OF_THREADS}
 fi
 
-#TEST_RECORD_SIZE="${TEST_CACHE_SIZE}k"
-#${PERL} simpleIozoneMark.pl ${IOZONE_TEST_DIR}
-#sleep 2m
-#exit
-
-
 
 # for all test sizes to test
 for TEST_FILE_SIZE in ${SIZES}

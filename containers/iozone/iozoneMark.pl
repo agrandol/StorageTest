@@ -24,6 +24,12 @@ my $storageName = $ENV{PERSISTENT_STORAGE_NAME} || 'penguin-ceph-storage';
 my $storageVersion = $ENV{PERSISTENT_STORAGE_VERSION} || '1.0.1';
 my $jobName = $ENV{JOB_NAME} || 'iozone';
 
+print("testDir: $testDir\n");
+print("testFileSize: $testFileSize\n");
+print("testCacheSize: $testCacheSize\n");
+print("testRecordSize: $testRecordSize\n");
+print("testNumThreads: $testNumThreads\n");
+
 # arrays to collect results
 my @allIops;
 my @allRandomIops;
@@ -68,7 +74,8 @@ chomp(my $testStartTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
 chomp(my $startTimestamp = `date "+%Y%m%d-%H%M%S"`);
 
 #my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -rlk -s10m -l$procPerThread |";
-my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
+#my $cmd = "$origDir/iozone3_469/src/current/iozone -o -O -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
+my $cmd = "/usr/bin/iozone -o -O -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
 print("[RUN] $cmd\n");
 open(F, $cmd);
 while ($_ = <F> ) {
@@ -93,7 +100,7 @@ while ($_ = <F> ) {
 	};	
 }
 close(F);
-print("Completing run\n");
+#print("Completing IOPS run\n");
 $stat = chdir("$origDir");
 if ($stat == 0) {
 	perror('chdir ' . $origDir);
@@ -126,7 +133,8 @@ if ($stat == 0) {
 
 #my $cmd = "$origDir/iozone3_469/src/current/iozone -o -c -rlm -s30m -l$procPerThread |";
 #my $cmd = "$origDir/iozone3_469/src/current/iozone -o -rlk -s10m -l$procPerThread |";
-my $cmd = "$origDir/iozone3_469/src/current/iozone -o -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
+#my $cmd = "$origDir/iozone3_469/src/current/iozone -o -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
+my $cmd = "/usr/bin/iozone -o -r$testRecordSize -S$testCacheSize -s$testFileSize -l$testNumThreads |";
 
 print("[RUN] $cmd\n");
 open(F, $cmd);
@@ -155,7 +163,7 @@ while ($_ = <F> ) {
 	};
 }
 close(F);
-print("Completing run\n");
+#print("Completing bandwidth run\n");
 $stat = chdir("$origDir");
 if ($stat == 0) {
 	perror('chdir ' . $origDir);
@@ -165,10 +173,9 @@ system("rm -rf $tmpDir");
 # record the end time
 chomp(my $testEndTime = `date -u "+%Y-%m-%dT%H:%M:%SZ"`);
 
-print("Calculating averages\n");
-
 #--------------------------------------------------------------------
 # Calculate averages
+#print("Calculating averages\n");
 
 my $iopsAvg = "";
 $iopsAvg = sprintf("%.4g", POSIX::pow($iops, 1.0 / $iopsCnt))  if ($iopsCnt > 0);
@@ -195,7 +202,7 @@ my $bwUnits = "GB/s";
 
 #--------------------------------------------------------------------
 # Output results
-print("Output results\n");
+#print("Output results\n");
 
 my $outputPreamble = '{';
 $outputPreamble .= '"metric": "iozone",';

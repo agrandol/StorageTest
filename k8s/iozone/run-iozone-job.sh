@@ -18,8 +18,8 @@ usage() {
 	echo "  -n, --namespace <NAMESPACE>      the namespace that should be used for the run."	
 	echo "  -s, --sleep <STAY_ALIVE_TIME>    the amount of time to sleep when the job completes to " 
 	echo "                                   allow results collection and export."
-	echo "                                   Use standard Linux sleep notation. Example: \"5m\" to"
-	echo "                                   sleep for 5 minutes, which is the default."
+	echo "                                   Use standard Linux sleep notation. Example: \"2m\" to"
+	echo "                                   sleep for 2 minutes, which is the default."
 	echo "  -h, --help                       display this help message."
 	echo "  --cache-sizes <CACHE_SIZES>      the cache sizes IOzone will use, these are in k."
 	echo "                                   Note: the record size will be set to the same value."
@@ -43,7 +43,7 @@ PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
 PERSISTENT_STORAGE_VERSION="1.0.1"
 IOZONE_STARTUP_WAIT="60s"
 JOB_START_WAIT="5s"
-IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.8"
+IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.9"
 JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
                         # that will add time to the time the test started
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
@@ -51,7 +51,7 @@ STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
 # IOzone parameters
 FILE_SIZES='10m'        #'10m'  # for small tests, assume one file size will be used for now
 CACHE_SIZES='4' # 8 16 32'  # note: these are in k; the record size will be set to the same value
-NUMBER_OF_THREADS='1' #'8'
+NUMBER_OF_THREADS='1'  #'8'
 
 # Process command line arguments
 while [ "$1" != "" ]; do
@@ -123,8 +123,8 @@ IOZONE_JOB_YAML_TEMPLATE="${CWD}/${IOZONE_JOB_NAME}-template.yml"
 PVC_YAML_TEMPLATE="${CWD}/iozone-pvc-ceph-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-ELASTICSEARCH_HOST="10.50.100.5:9200"
-#ELASTICSEARCH_HOST=
+#ELASTICSEARCH_HOST="10.50.100.5:9200"
+ELASTICSEARCH_HOST=
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
@@ -136,12 +136,13 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	JOB_TO_RUN="${IOZONE_JOB_NAME}-$i"
 	echo "$i: Job: ${JOB_TO_RUN}; job will run ${COMPLETIONS} time(s)"
 
-	# delete previous IOzone job with same name
-	${KUBECTL} delete jobs ${JOB_TO_RUN}
-
 	# set PVC parameters
 	PVC_NAME="iozone-pvc-ceph-$i"
 	PVC_YAML="${CWD}/iozone-pvc-ceph-$i.yml"
+
+	# delete previous IOzone job and PVC
+	${KUBECTL} delete job ${JOB_TO_RUN}
+	${KUBECTL} delete pvc ${PVC_NAME}
 
 	# find the PVC size
 	ALLOCATION_FACTOR="2"
@@ -159,9 +160,8 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		| sed "##/d" \
 		> ${PVC_YAML}
 
-	# delete previous claim and submit new claim
+	# create new PVC
 	echo "Creating claim: ${PVC_NAME}"
-	${KUBECTL} delete pvc ${PVC_NAME}
 	${KUBECTL} create -f ${PVC_YAML}
 	
 	# the YAML file that will be used to create the job
@@ -197,20 +197,20 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 done  # end of job creation loop
 
 # wait for all jobs to start
-#sleep ${IOZONE_STARTUP_WAIT}
+sleep ${IOZONE_STARTUP_WAIT}
 
 # rethink how to view the running pods as part of this script
-# for now, just exit
-exit
+# for now get list of running pods
 
+${KUBECTL} get pods -w
 
 # find running pods
-IOZONE_POD=`${KUBECTL} get --no-headers=true pods -o wide | grep ${IOZONE_POD_NAME} | grep Running | awk '{print $1}'`
+#IOZONE_POD=`${KUBECTL} get --no-headers=true pods -o wide | grep ${IOZONE_POD_NAME} | grep Running | awk '{print $1}'`
 
 # Watch the IOzone log for results
-if [ -n ${IOZONE_POD} ]
-then
-	${KUBECTL} logs ${IOZONE_POD} -f
-else
-	echo "There are no ${IOZONE_POD_NAME} pods running"
-fi
+#if [ -n ${IOZONE_POD} ]
+#then
+#	${KUBECTL} logs ${IOZONE_POD} -f
+#else
+#	echo "There are no ${IOZONE_POD_NAME} pods running"
+#fi

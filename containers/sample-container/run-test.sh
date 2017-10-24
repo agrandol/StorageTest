@@ -8,8 +8,10 @@
 
 STAY_ALIVE_SLEEP_TIME="1m"
 LOOP_SLEEP="2s"
-NUMBER_OF_LOOPS=10
+NUMBER_OF_LOOPS=100
 DATA_DIR="/data"
+ONE_K="1024"
+BUFFER_SIZE=$((8 * ${ONE_K}))
 
 echo "File system information"
 df -hT
@@ -20,7 +22,7 @@ do
     echo "Writing content to: ${FILENAME}"
     echo "Sample content for file $i" > ${FILENAME}
     echo "The text below is random text to fill the file" >> ${FILENAME}
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 2048 | head -n 2048 >> ${FILENAME}
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${BUFFER_SIZE} | head -n ${BUFFER_SIZE} >> ${FILENAME}
     sleep ${LOOP_SLEEP}
 done
 
