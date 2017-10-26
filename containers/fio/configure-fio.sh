@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Configure IOzone container to run tests
+# Configure fio container to run tests
 #
-# Filename: configure-iozone.sh
+# Filename: configure-fio.sh
 #
 #set -x
 
@@ -64,9 +64,6 @@ if [ -n "${ELASTICSEARCH_HOST}" ]; then
 		
 		# if access to the elasticsearch host was successful
 		if [ $? -eq 0 ]; then
-			# install logstash
-			#rpm -Uvh ${LOGSTASH_RPM}
-
 			# start logstash
 			echo "Starting logstash"
 			${LOGSTASH_APP} --path.settings ${LOGSTASH_SETTINGS} -f ${LOGSTASH_CONF} &
@@ -90,15 +87,15 @@ fi
 #----------------------------------------------------------------------
 # set the results directory
 
-IOZONE_TEST_DIR="/data";
+TEST_DIR="/data";
 
 #----------------------------------------------------------------------
-# start the IOzone test
+# start the  test
 CONTINUE_TEST="TRUE"
 SECONDS=0
-echo "Starting IOzone test"
+echo "Starting fio test"
 while [ "${CONTINUE_TEST}" = "TRUE" ]; do
-	. ${CWD}/run-iozone.sh
+	. ${CWD}/run-fio.sh
 	
 	CURRENT_TIME=`date -u +%m%d%H%M`
 	if [ ${CURRENT_TIME} -gt ${TEST_END_TIME} ]
@@ -111,43 +108,6 @@ DURATION=$SECONDS
 echo "Test duration: $(($DURATION / 60)) minutes, $((DURATION % 60)) seconds"
 
 #----------------------------------------------------------------------
-# package results and send to web server
-
-#RESULTS_WEBSERVER="10.50.100.5"  # should be set in environment
-
-# if the results webserver is defined
-if [ -n "${RESULTS_WEBSERVER}" ]; then
-	JOB_NAME="iozone"
-	DATE_HOUR_MIN=`date "+%Y%m%d-%H%M"`
-	RESULTS_FILENAME="${HOSTNAME}-${DATE_HOUR_MIN}.tgz"
-	RESULTS_FULL_FILEPATH="${IOZONE_TEST_DIR}/${RESULTS_FILENAME}"
-	DATE_WITH_HOUR=`date "+%Y%m%d-%H"`
-	WWW_TARGET_HOST="http://${RESULTS_WEBSERVER}:8080"
-
-	# exclude output.txt, output.text is configured for Logstash and contains the same results as the 
-	# individual output files to be packaged
-	tar -cvzf ${RESULTS_FULL_FILEPATH} --exclude=/data/output.txt /data/*.txt
-	echo "Results written to: ${RESULTS_FULL_FILEPATH}"
-
-	# try accessing the results web server
-	${PING_CMD} ${PING_COUNT_ARG} $(echo ${RESULTS_WEBSERVER} | cut -d: -f1)
-
-	# if access to the results web server was successful
-	if [ $? -eq 0 ]; then
-		# send results via curl
-		curl -X POST -H "Content-Type: application/x-tar" --data-binary @${RESULTS_FULL_FILEPATH}  ${WWW_TARGET_HOST}/${DATE_WITH_HOUR}/${JOB_NAME}/${RESULTS_FILENAME}
-	fi
-fi
-
-#----------------------------------------------------------------------
 # keep the script running so the container has time to write results to logstash
 echo "Writing results (waiting ${STAY_ALIVE_SLEEP_TIME})"
 sleep ${STAY_ALIVE_SLEEP_TIME}
-
-#----------------------------------------------------------------------
-# keep the script running so the container remains running
-#while true
-#do
-#	echo "Press {CTRL+C} to stop."
-#	sleep ${STAY_ALIVE_SLEEP_TIME}
-#done

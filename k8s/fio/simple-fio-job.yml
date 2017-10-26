@@ -1,3 +1,5 @@
+# Initial fio job YML, no PVC
+#
 apiVersion: batch/v1
 kind: Job
 metadata:

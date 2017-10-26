@@ -1,0 +1,74 @@
+# current parsed output
+{
+	"metric": "fio",
+	"testName": "randwritejob",
+	"blockSize": "4K-4K/4K-4K/4K-4K",
+	"testType": "randwrite",
+	"endTime": "2017-10-25 21:57:03",
+	"ioengine": "libaio",
+	"iodepth": "8",
+	"io": 163336,
+	"ioUnits": "KB",
+	"diskBW": 32661,
+	"bwUnits": "KB/s",
+	"iops": 8165,
+	"iopsUnits": "IOPS",
+	"runtime": 5001,
+	"@timestamp": "2017-10-25T21:57:03Z",
+	"runtimeUnits": "msec"
+}
+
+#
+# desired output, three seperate outputs
+#
+{
+    "persistentStorageName": "penguin-ceph-storage",
+	"persistentStorageVersion": "1.0.1",
+	"jobname": "iozone",
+	"podname": "7963bb9ce85d",
+   	"testDirectory": "/data",
+	"fileSystemType": "overlayfs",
+    "type": "overlayfs",
+
+	"metric": "fio",
+	"testName": "randwritejob",
+	"blockSize": "4K-4K/4K-4K/4K-4K",
+	"testType": "randwrite",
+	"endTime": "2017-10-25 21:57:03",
+	"ioengine": "libaio",
+	"iodepth": "8",
+	"io": 163336,
+	"ioUnits": "KB",
+	"runtime": 5001,
+	"@timestamp": "2017-10-25T21:57:03Z",
+	"runtimeUnits": "msec"
+}
+{
+	"metric": "fio",
+	"testName": "randwritejob",
+	"blockSize": "4K-4K/4K-4K/4K-4K",
+	"testType": "randwrite",
+	"endTime": "2017-10-25 21:57:03",
+	"ioengine": "libaio",
+	"iodepth": "8",
+	"diskBW": 32661,
+	"bwUnits": "KB/s",
+	"runtime": 5001,
+	"@timestamp": "2017-10-25T21:57:03Z",
+	"runtimeUnits": "msec"
+}
+{
+
+	"metric": "fio",
+	"testName": "randwritejob",
+	"blockSize": "4K-4K/4K-4K/4K-4K",
+	"testType": "randwrite",
+	"endTime": "2017-10-25 21:57:03",
+	"ioengine": "libaio",
+	"iodepth": "8",
+	"iops": 8165,
+	"iopsUnits": "IOPS",
+	"runtime": 5001,
+	"@timestamp": "2017-10-25T21:57:03Z",
+	"runtimeUnits": "msec"
+}
