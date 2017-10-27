@@ -39,9 +39,11 @@ JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
 
 # fio parameters, add here
-FILE_SIZES='100m'
-IODEPTH='2' #'8'
+FILE_SIZES='500m'
+NUM_RUNS='4' #'8'
 
+# for posting to pywebsvr
+RESULTS_WEBSERVER="10.50.100.5"
 
 # Process command line arguments
 while [ "$1" != "" ]; do
@@ -98,8 +100,10 @@ JOB_YAML_TEMPLATE="${CWD}/${JOB_NAME}-template.yml"
 PVC_YAML_TEMPLATE="${CWD}/pvc-ceph-template.yml"
 
 # Logstash configuration parameters, Elasticsearch location
-ELASTICSEARCH_HOST="10.50.100.5:9200"
-#ELASTICSEARCH_HOST=
+#ELASTICSEARCH_HOST="10.50.100.5:9200"  # previously running ES
+#ELASTICSEARCH_HOST="172.30.25.208:9200"
+#ELASTICSEARCH_HOST="10.50.100.7:9200"   # or .8, .9 - Port can be 30387
+ELASTICSEARCH_HOST="elasticsearch:9200"
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
@@ -122,7 +126,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 	# find the PVC size
 	ALLOCATION_FACTOR="2"
 	TEST_FILE_SIZE=$(echo ${FILE_SIZES} | sed 's/[^0-9]*//g')
-	PVC_SIZE=$((${TEST_FILE_SIZE} * ${ALLOCATION_FACTOR} * ${IODEPTH}))
+	PVC_SIZE=$((${TEST_FILE_SIZE} * ${ALLOCATION_FACTOR} * ${NUM_RUNS}))
 	FILE_SIZE_UNITS=$(echo ${FILE_SIZES} | sed 's/[^a-zA-Z]*//g')
 	PVC_UNITS="$(echo ${FILE_SIZE_UNITS} | tr '[:lower:]' '[:upper:]')i"
 	PVC_SIZE="${PVC_SIZE}${PVC_UNITS}"
@@ -157,6 +161,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		| sed "s|__PERSISTENT_STORAGE_VERSION__|${PERSISTENT_STORAGE_VERSION}|g" \
 		| sed "s|__JOB_NAME__|${JOB_TO_RUN}|g" \
 		| sed "s|__PVC_NAME__|${PVC_NAME}|g" \
+		| sed "s|__RESULTS_WEBSERVER__|${RESULTS_WEBSERVER}|g" \
 		| sed "##/d" \
 		> ${JOB_YAML}
 
@@ -181,3 +186,5 @@ sleep ${STARTUP_WAIT}
 # for now get list of running pods
 
 ${KUBECTL} get pods -w | grep ${JOB_NAME}
+
+#grep -h "size=" *.fio | sed "s|size=||g" | sed "s|m||g" | awk '{ SUM += $1} END { print SUM }'

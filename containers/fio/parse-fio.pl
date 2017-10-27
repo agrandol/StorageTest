@@ -61,17 +61,18 @@ sub scan($) {
             $blockSize = $3;
             $ioengine = $4;
             $iodepth = $5;
+#            print "Line: " . $lineNum . "\n"; #" (" . $1 . ")\n";
         };
 
         # Test name and date
-        m#(\w+): \(.*\): err= \d+: pid=\d+: (\w+) (\w+)\s+(\d+) (\d+:\d+:\d+) (\d+)# and do {
+        m#(\w+\-?\w*\-?\w*): \(.*\): err= \d+: pid=\d+: (\w+) (\w+)\s+(\d+) (\d+:\d+:\d+) (\d+)# and do {
             $testName = $1;
             $testDayOfWeek = $2;
             $month = $monthNumber{$3};
             $day = $4;
             $hourMinuteSecond = $5;
             $year = $6;
-#            print "Line: " . $lineNum . "\n"; #" (" . $1 . ")\n";
+ #           print "Line: " . $lineNum . "\n"; #" (" . $1 . ")\n";
         };
 
         # Test results
@@ -83,7 +84,7 @@ sub scan($) {
             $iopsResult = $5;
             $runtime = $6;
             $runtimeUnits = $7;
-#            print "Line: " . $lineNum . "\n"; #" (" . $1 . ")\n";
+  #          print "Line: " . $lineNum . "\n"; #" (" . $1 . ")\n";
         };
     }
 
@@ -130,8 +131,8 @@ sub scan($) {
     $jsonOutput .= "\"ioengine\": \"$ioengine\",";
     $jsonOutput .= "\"iodepth\": \"$iodepth\",";
     # results
-    $jsonOutput .= "\"io\": $ioResult,";
-    $jsonOutput .= "\"ioUnits\": \"$ioUnits\",";
+    $jsonOutput .= "\"result\": $ioResult,";
+    $jsonOutput .= "\"resultUnits\": \"$ioUnits\",";
     $jsonOutput .= "\"runtime\": $runtime,";
     $jsonOutput .= "\"\@timestamp\": \"$timestamp\",";
     $jsonOutput .= "\"runtimeUnits\": \"$runtimeUnits\"";
@@ -159,8 +160,8 @@ sub scan($) {
     $jsonOutput .= "\"ioengine\": \"$ioengine\",";
     $jsonOutput .= "\"iodepth\": \"$iodepth\",";
     # results
-    $jsonOutput .= "\"diskBW\": $bwResult,";
-    $jsonOutput .= "\"bwUnits\": \"$bwUnits\",";
+    $jsonOutput .= "\"result\": $bwResult,";
+    $jsonOutput .= "\"resultUnits\": \"$bwUnits\",";
     $jsonOutput .= "\"runtime\": $runtime,";
     $jsonOutput .= "\"\@timestamp\": \"$timestamp\",";
     $jsonOutput .= "\"runtimeUnits\": \"$runtimeUnits\"";
@@ -188,8 +189,8 @@ sub scan($) {
     $jsonOutput .= "\"ioengine\": \"$ioengine\",";
     $jsonOutput .= "\"iodepth\": \"$iodepth\",";
     # results
-    $jsonOutput .= "\"iops\": $iopsResult,";
-    $jsonOutput .= "\"iopsUnits\": \"IOPS\",";
+    $jsonOutput .= "\"result\": $iopsResult,";
+    $jsonOutput .= "\"resultUnits\": \"IOPS\",";
     $jsonOutput .= "\"runtime\": $runtime,";
     $jsonOutput .= "\"\@timestamp\": \"$timestamp\",";
     $jsonOutput .= "\"runtimeUnits\": \"$runtimeUnits\"";

@@ -108,6 +108,39 @@ DURATION=$SECONDS
 echo "Test duration: $(($DURATION / 60)) minutes, $((DURATION % 60)) seconds"
 
 #----------------------------------------------------------------------
+# package results and send to web server
+
+#RESULTS_WEBSERVER="10.50.100.5"  # should be set in environment
+
+# if the results webserver is defined
+if [ -n "${RESULTS_WEBSERVER}" ]; then
+	JOB_NAME="fio"
+	DATE_HOUR_MIN=`date "+%Y%m%d-%H%M"`
+	RESULTS_FILENAME="${HOSTNAME}-${DATE_HOUR_MIN}.tgz"
+	RESULTS_FULL_FILEPATH="${TEST_DIR}/${RESULTS_FILENAME}"
+	DATE_WITH_HOUR=`date "+%Y%m%d-%H"`
+	WWW_TARGET_HOST="http://${RESULTS_WEBSERVER}:8080"
+
+	# exclude output.txt, output.text is configured for Logstash and contains the same results as the 
+	# individual output files to be packaged
+	#tar -cvzf ${RESULTS_FULL_FILEPATH} --exclude=/data/output.txt /data/*.txt
+
+	# tar the output.txt file that contains the JSON results that are forwarded to ELK
+	tar -cvzf ${RESULTS_FULL_FILEPATH} ${TEST_DIR}/output.txt
+
+	echo "Results written to: ${RESULTS_FULL_FILEPATH}"
+
+	# try accessing the results web server
+	${PING_CMD} ${PING_COUNT_ARG} $(echo ${RESULTS_WEBSERVER} | cut -d: -f1)
+
+	# if access to the results web server was successful
+	if [ $? -eq 0 ]; then
+		# send results via curl
+		curl -X POST -H "Content-Type: application/x-tar" --data-binary @${RESULTS_FULL_FILEPATH}  ${WWW_TARGET_HOST}/${DATE_WITH_HOUR}/${JOB_NAME}/${RESULTS_FILENAME}
+	fi
+fi
+
+#----------------------------------------------------------------------
 # keep the script running so the container has time to write results to logstash
 echo "Writing results (waiting ${STAY_ALIVE_SLEEP_TIME})"
 sleep ${STAY_ALIVE_SLEEP_TIME}

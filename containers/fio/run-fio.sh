@@ -15,14 +15,21 @@ PARSED_OUTPUT_FILE="output.txt"
 # display the initial state of the file systems
 df -hT
 
-# create the output filename
-DATE_WITH_TIME=`date "+%Y%m%d-%H%M%S"`
-OUTPUT_FILE="${DATA_DIR}/${JOB_NAME}_${HOSTNAME}_${DATE_WITH_TIME}.out"
-
 # run the test
-echo "Starting fio job"
-/usr/bin/fio /config/random-write.fio --output=${OUTPUT_FILE}
-echo "Done with test."
+echo "Starting fio test"
+
+# for all config files
+CONFIG_FILES=/config/*.fio
+for f in ${CONFIG_FILES}
+do
+    echo "Running ${f}"
+    DATE_WITH_TIME=`date "+%Y%m%d-%H%M%S"`
+    OUT_FILENAME=$(echo $f | sed "s|/config/||g" | sed "s|.fio||g")
+    OUTPUT_FILE="${DATA_DIR}/${JOB_NAME}_${HOSTNAME}_${DATE_WITH_TIME}-${OUT_FILENAME}.out"
+    /usr/bin/fio ${f} --output=${OUTPUT_FILE}  
+done
+
+echo "fio test complete."
 
 # display the final state of the file systems
 df -hT
@@ -47,22 +54,3 @@ rm ${RESULT_FILES}
 
 # return to the old directory
 cd ${SAVED_CWD}
-
-
-
-#COUNTER=0
-#yourfilenames=`find ~/dev/meadowgate/rhlab/results/ -name *.out`
-#for eachfile in $yourfilenames
-#do
-#   echo "Processing file $eachfile"
-#   echo "{ \"create\" : { \"_index\" : \"fio5\", \"_type\" : \"fio\", \"_id\" : \"$COUNTER\" } }" >> results.json
-#   ./parse-fio.pl $eachfile >> results.json
-#   COUNTER=$[$COUNTER +1]
-#done
-
-# remove the test file
-#rm -rf ${OUTPUT_FILE}
-
-# old test runs
-#fio /config/trivial.fio
-#fio /config/random-write.fio

@@ -34,9 +34,8 @@ RUN mkdir /home/fio \
 # copy the rpms needed
 COPY rpms/ /home/fio/rpms/
 
-# add fio config files
-ADD config/trivial.fio /config/trivial.fio
-ADD config/random-write.fio /config/random-write.fio
+# copy fio config files
+COPY config/ /config/
 
 # Install the benchmark and supporting libraries
 RUN rpm -Uvh /home/fio/rpms/librbd1-0.94.5-2.el7.x86_64.rpm && \
