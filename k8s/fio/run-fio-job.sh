@@ -33,17 +33,17 @@ PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
 PERSISTENT_STORAGE_VERSION="1.0.1"
 STARTUP_WAIT="60s"
 JOB_START_WAIT="5s"
-CONTAINER_AND_VERSION="ranada/fio:0.0.1"
+CONTAINER_AND_VERSION="ranada/fio:0.0.2"
 JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
                         # that will add time to the time the test started
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
 
 # fio parameters, add here
 FILE_SIZES='500m'
-NUM_RUNS='4' #'8'
+NUM_RUNS='8'
 
 # for posting to pywebsvr
-RESULTS_WEBSERVER="10.50.100.5"
+#RESULTS_WEBSERVER="10.50.100.5"
 
 # Process command line arguments
 while [ "$1" != "" ]; do
@@ -103,12 +103,13 @@ PVC_YAML_TEMPLATE="${CWD}/pvc-ceph-template.yml"
 #ELASTICSEARCH_HOST="10.50.100.5:9200"  # previously running ES
 #ELASTICSEARCH_HOST="172.30.25.208:9200"
 #ELASTICSEARCH_HOST="10.50.100.7:9200"   # or .8, .9 - Port can be 30387
-ELASTICSEARCH_HOST="elasticsearch:9200"
+#ELASTICSEARCH_HOST="elasticsearch:9200"
+ELASTICSEARCH_HOST="10.50.100.7:9211"
 ELASTICSEARCH_USER=
 ELASTICSEARCH_PASSWORD=
 LOGSTASH_DATE=`date -u "+%Y.%m.%d"`
-#LOGSTASH_INDEX="logstash-fio-${LOGSTASH_DATE}"
-LOGSTASH_INDEX="logstash-fio-test"
+LOGSTASH_INDEX="logstash-fio-${LOGSTASH_DATE}"
+#LOGSTASH_INDEX="logstash-fio-test"
 
 # for all jobs to run
 for i in `seq 1 ${NUMBER_OF_JOBS}`; do
@@ -164,11 +165,6 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		| sed "s|__RESULTS_WEBSERVER__|${RESULTS_WEBSERVER}|g" \
 		| sed "##/d" \
 		> ${JOB_YAML}
-
-# Are custom parameters sent in or are they set via .fio file?
-#		| sed "s|__FILE_SIZES__|${FILE_SIZES}|g" \
-#		| sed "s|__CACHE_SIZES__|${CACHE_SIZES}|g" \
-#		| sed "s|__NUMBER_OF_THREADS__|${NUMBER_OF_THREADS}|g" \
 
 	# Start the test
 	echo "Starting job: ${JOB_TO_RUN}"

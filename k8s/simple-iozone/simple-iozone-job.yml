@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: simple-iozone-job
+  namespace: meadowgate
+spec:
+  completions: 1
+  template:
+    metadata:	  
+      name: simple-iozone-job
+    spec:
+      volumes:
+      - name: simple-iozone-data-volume
+        persistentVolumeClaim: 
+          claimName: simple-iozone-pvc-ceph
+
+      containers:
+      - name: iozone
+        image: ranada/simple-iozone:0.0.1
+        imagePullPolicy: Always
+
+        volumeMounts:
+        - name: simple-iozone-data-volume
+          mountPath: "/data"
+      restartPolicy: Never

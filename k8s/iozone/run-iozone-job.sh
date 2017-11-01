@@ -47,6 +47,7 @@ IOZONE_CONTAINER_AND_VERSION="ranada/iozone:0.0.9"
 JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
                         # that will add time to the time the test started
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
+RUN_SIMPLE_TEST=
 
 # IOzone parameters
 FILE_SIZES='10m'        #'10m'  # for small tests, assume one file size will be used for now
@@ -185,6 +186,7 @@ for i in `seq 1 ${NUMBER_OF_JOBS}`; do
 		| sed "s|__NUMBER_OF_THREADS__|${NUMBER_OF_THREADS}|g" \
 		| sed "s|__JOB_NAME__|${JOB_TO_RUN}|g" \
 		| sed "s|__PVC_NAME__|${PVC_NAME}|g" \
+        | sed "s|__RUN_SIMPLE_TEST__|${RUN_SIMPLE_TEST}|g" \
 		| sed "##/d" \
 		> ${IOZONE_JOB_YAML}
 

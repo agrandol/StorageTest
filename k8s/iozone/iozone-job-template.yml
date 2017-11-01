@@ -46,6 +46,8 @@ spec:
           value: "__CACHE_SIZES__"
         - name: NUMBER_OF_THREADS
           value: "__NUMBER_OF_THREADS__"
+        - name: RUN_SIMPLE_TEST
+          value: "__RUN_SIMPLE_TEST__"
 
         volumeMounts:
 ##        - name: scp-secret
