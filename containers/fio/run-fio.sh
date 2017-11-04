@@ -45,7 +45,7 @@ RESULT_FILES=`ls *.out`
 ${PERL} ${HOME_DIR}/${PARSING_SCRIPT} ${RESULT_FILES} >> ${DATA_DIR}/${PARSED_OUTPUT_FILE}
 
 # print results to the logs
-cat ${RESULT_FILES}
+#cat ${RESULT_FILES}
 cat ${DATA_DIR}/${PARSED_OUTPUT_FILE}
 
 # remove test file and fio resutls

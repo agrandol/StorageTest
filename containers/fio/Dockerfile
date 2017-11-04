@@ -1,8 +1,8 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.2" \
-      run="docker run ranada/fio" \
+label version="0.0.3" \
+      run="docker run ranada/fio:0.0.3" \
 	  source="" \
 	  description="fio benchmark container. Results can be sent to Logstash, results will be stored in /data." \
 	  purpose="Test storage performance." \
@@ -11,11 +11,11 @@ label version="0.0.2" \
 	  base-image="CentOS 7 Base Image" \
 	  test-source="https://centos.pkgs.org/7/epel-x86_64/fio-2.2.8-2.el7.x86_64.rpm.html" \
 	  name="fio test" \
-	  build-date="2017-10-31"
+	  build-date="2017-11-01"
 
 # set environment variables
 ENV CONTAINER_NAME fio
-ENV CONTAINER_VERSION "0.0.2"
+ENV CONTAINER_VERSION "0.0.3"
 ENV HOME_DIR /home/fio
 ENV DATA_DIR /data
 
