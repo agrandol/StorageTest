@@ -6,9 +6,10 @@
 #
 #set -x
 
+DOCKER_REPO="ranada"
 CONTAINER_NAME="fio"
-CONTAINER_IMAGE="0.0.3"
-REPO_AND_NAME="ranada/${CONTAINER_NAME}:${CONTAINER_IMAGE}"
+CONTAINER_IMAGE="0.0.4"
+REPO_AND_NAME="${DOCKER_REPO}/${CONTAINER_NAME}:${CONTAINER_IMAGE}"
 ELK_RPM_DIRECTORY="../../elk-rpms"
 GENERAL_RPM_DIRECTORY="../../rpms"
 LOGSTASH_RPM="logstash-5.6.2.rpm"            # set actual name of rpm file

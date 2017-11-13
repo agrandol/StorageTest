@@ -5,7 +5,7 @@
 # Will parse multiple fio output files converting the results to JSON.
 # A newline will be place between results to facilite import into Logstash. placing a newline between each
 #
-# Call as follows: perl parse-fio-out.pl <file1> <file2> ... <filen>
+# Call as follows: perl parse-fio.pl <file1> <file2> ... <filen>
 #
 use Time::Local;
 
@@ -197,16 +197,6 @@ sub scan($) {
     $jsonOutput .= "}\n";  
 
     print $jsonOutput;
-=comment
-    print "Test: " . $testName . "\n";
-    print "Day:  " . $testDayOfWeek . "\n";
-    printf("Date: %02d %02d %s %04d\n", $month, $day, $hourMinuteSecond, $year);
-
-    printf("IO: %f %s\n", $ioResult, $ioUnits);
-    printf("BW: %f %s\n", $bwResult, $bwUnits);
-    printf("IOPS: %d\n", $iopsResult);
-    printf("Runtime: %d %s\n", $runtime, $runtimeUnits);
-=cut
 }
 
 # for each file passed in

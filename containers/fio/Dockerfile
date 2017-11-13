@@ -1,8 +1,8 @@
 # start with a CentOS 7 base
 from centos
 
-label version="0.0.3" \
-      run="docker run ranada/fio:0.0.3" \
+label version="0.0.4" \
+      run="docker run ranada/fio:0.0.4" \
 	  source="" \
 	  description="fio benchmark container. Results can be sent to Logstash, results will be stored in /data." \
 	  purpose="Test storage performance." \
@@ -11,16 +11,17 @@ label version="0.0.3" \
 	  base-image="CentOS 7 Base Image" \
 	  test-source="https://centos.pkgs.org/7/epel-x86_64/fio-2.2.8-2.el7.x86_64.rpm.html" \
 	  name="fio test" \
-	  build-date="2017-11-01"
+	  build-date="2017-11-09"
 
 # set environment variables
 ENV CONTAINER_NAME fio
-ENV CONTAINER_VERSION "0.0.3"
+ENV CONTAINER_VERSION "0.0.4"
 ENV HOME_DIR /home/fio
 ENV DATA_DIR /data
+ENV CONFIG_DIR /config
 
 # perform yum installs
-RUN yum -y update && yum -y install perl gcc make java-1.8.0-openjdk \
+RUN yum -y update && yum -y install perl java-1.8.0-openjdk \
 	libaio libaio-devel libibverbs librdmacm librados2-devel && \
 	yum clean all && \
 	rm -rf /var/cache/yum
@@ -50,6 +51,7 @@ COPY run-fio.sh /home/fio/
 COPY keep-alive.sh /home/fio/
 COPY logstash.conf-template /home/fio/
 COPY parse-fio.pl /home/fio
+COPY parse-fio-save-csv.pl /home/fio
 
 # change to the fio directory, prepare to run benchmark
 WORKDIR /home/fio
