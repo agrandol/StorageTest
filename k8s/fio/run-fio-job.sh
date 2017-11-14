@@ -33,7 +33,7 @@ PERSISTENT_STORAGE_NAME="penguin-ceph-appliance"
 PERSISTENT_STORAGE_VERSION="1.0.1"
 STARTUP_WAIT="60s"
 JOB_START_WAIT="5s"
-CONTAINER_AND_VERSION="ranada/fio:0.0.3"
+CONTAINER_AND_VERSION="ranada/fio:0.0.4"
 JOB_DURATION="0 hour"   # minimum test duration, use Linux data notation
                         # that will add time to the time the test started
 STAY_ALIVE_SLEEP_TIME="5m"  # Stay alive time, default in container is 5 minutes
