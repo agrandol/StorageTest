@@ -4,6 +4,7 @@
 #
 # Filename: configure-fio.sh
 #
+# vim: tabstop=4: noexpandtab
 #set -x
 
 # if stay alive time is not set, set it to 5 minutes
@@ -86,7 +87,6 @@ fi
 
 #----------------------------------------------------------------------
 # set the results directory
-
 TEST_DIR="/data";
 
 #----------------------------------------------------------------------
@@ -106,6 +106,42 @@ while [ "${CONTINUE_TEST}" = "TRUE" ]; do
 done # while loop
 DURATION=$SECONDS
 echo "Test duration: $(($DURATION / 60)) minutes, $((DURATION % 60)) seconds"
+
+#----------------------------------------------------------------------
+# send results to webserver
+# if the results webserver is defined
+if [ -n "${RESULTS_WEBSERVER}" ]; then
+	# Note: the general output files to transfer have already been written in run-fio.sh
+	JOB_NAME="fio"
+	WWW_TARGET_HOST="http://${RESULTS_WEBSERVER}:8080"
+	
+	# create a tar file with parsed output
+	DATE_HOUR_MIN_SEC=`date "+%Y%m%d-%H%M%S"`
+	PARSED_RESULTS_FILENAME="${HOSTNAME}-parsed-output-${DATE_HOUR_MIN_SEC}.tgz"
+	PARSED_RESULTS_FULL_FILEPATH="${TEST_DIR}/${PARSED_RESULTS_FILENAME}"
+
+	# package parsed files
+	tar -cvzf ${PARSED_RESULTS_FULL_FILEPATH} ${DATA_DIR}/*.txt ${DATA_DIR}/*.csv
+	echo "Parsed results written to: ${PARSED_RESULTS_FULL_FILEPATH}"
+
+	# try accessing the results web server
+	${PING_CMD} ${PING_COUNT_ARG} $(echo ${RESULTS_WEBSERVER} | cut -d: -f1)
+
+	# if access to the results web server was successful
+	if [ $? -eq 0 ]; then
+		# are there files to transfer
+		RESULTS_FILES=`ls ${DATA_DIR}/*.tgz`
+
+		# for all results files found
+		for tarFile in ${RESULTS_FILES}; do
+			# extract the filename from the full file path
+			TAR_RESULTS_FILENAME=$(echo ${tarFile} | sed "s|${DATA_DIR}/||g")
+
+			# send results via curl
+			curl -X POST -H "Content-Type: application/x-tar" --data-binary @${tarFile}  ${WWW_TARGET_HOST}/${JOB_NAME}/${TAR_RESULTS_FILENAME}
+		done
+	fi
+fi
 
 #----------------------------------------------------------------------
 # keep the script running so the container has time to write results to logstash

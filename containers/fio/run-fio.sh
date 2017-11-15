@@ -56,29 +56,16 @@ cat ${DATA_DIR}/${PARSED_CSV_FILE}
 #----------------------------------------------------------------------
 # package results and send to web server
 
-#RESULTS_WEBSERVER="10.50.100.5"  # should be set in environment
-
 # if the results webserver is defined
 if [ -n "${RESULTS_WEBSERVER}" ]; then
-	JOB_NAME="fio"
-	WWW_TARGET_HOST="http://${RESULTS_WEBSERVER}:8080"
-
+	# create filename
 	DATE_HOUR_MIN_SEC=`date "+%Y%m%d-%H%M%S"`
-	RESULTS_PACKAGE_FILENAME="${HOSTNAME}-${DATE_HOUR_MIN_SEC}.tgz"
+	RESULTS_PACKAGE_FILENAME="${HOSTNAME}-fio-out-${DATE_HOUR_MIN_SEC}.tgz"
 	RESULTS_PACKAGE_FULL_FILEPATH="${TEST_DIR}/${RESULTS_PACKAGE_FILENAME}"
 
 	# package all test files in the /data directory except the test files
-	tar -cvzf ${RESULTS_PACKAGE_FULL_FILEPATH} --exclude=${DATA_DIR}/*.data ${DATA_DIR}/*.*
-	echo "Results written to: ${RESULTS_PACKAGE_FULL_FILEPATH}"
-	
-	# try accessing the results web server
-	${PING_CMD} ${PING_COUNT_ARG} $(echo ${RESULTS_WEBSERVER} | cut -d: -f1)
-
-	# if access to the results web server was successful
-	if [ $? -eq 0 ]; then
-		# send results via curl
-		curl -X POST -H "Content-Type: application/x-tar" --data-binary @${RESULTS_PACKAGE_FULL_FILEPATH}  ${WWW_TARGET_HOST}/${JOB_NAME}/${RESULTS_PACKAGE_FILENAME}
-	fi
+	tar -cvzf ${RESULTS_PACKAGE_FULL_FILEPATH} ${DATA_DIR}/*.out
+	echo "fio results written to: ${RESULTS_PACKAGE_FULL_FILEPATH}"
 fi
 
 #----------------------------------------------------------------------

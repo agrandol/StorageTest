@@ -5,7 +5,7 @@
 from centos
 
 label version="0.0.1" \
-      run="docker run ranada/fio:0.0.1" \
+      run="docker run ranada/pywebsvr:0.0.1" \
 	  source="" \
 	  description="pywebsvr webserver to collect test resultsthat will be stored in /results." \
 	  purpose="Collect test results." \
@@ -16,10 +16,10 @@ label version="0.0.1" \
 	  build-date="2017-11-14"
 
 # set environment variables
-ENV CONTAINER_NAME pywebsvr
-ENV CONTAINER_VERSION "0.0.1"
-ENV HOME_DIR /home/pywebsvr
-ENV RESULTS_DIR /results
+ENV CONTAINER_NAME="pywebsvr" \
+	CONTAINER_VERSION="0.0.1" \
+	HOME_DIR="/home/pywebsvr" \
+	RESULTS_DIR="/results"
 
 # perform yum installs
 RUN yum -y update && \
