@@ -7,8 +7,9 @@ PERL="/usr/bin/perl"
 PARSING_SCRIPT="parse-fio.pl"
 PARSED_OUTPUT_FILE="output.txt"
 PARSING_SCRIPT_CSV="parse-fio-save-csv.pl"
-PARSED_CSV_FILE="output.csv"
+PARSED_CSV_FILE="output-${HOSTNAME}.csv"
 FIO_EXE="/usr/bin/fio"
+
 
 # check environment variables, set to default values if not set
 [ -n "${JOB_NAME}" ] || JOB_NAME="fio-job"

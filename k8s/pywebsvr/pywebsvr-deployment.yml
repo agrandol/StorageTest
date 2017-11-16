@@ -15,5 +15,13 @@ spec:
       containers:
       - name: pywebsvr
         image: ranada/pywebsvr:0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /results
+          name: pywebsvr-results-volume
         ports:
         - containerPort: 8080
+      volumes:
+      - name: pywebsvr-results-volume
+        persistentVolumeClaim:
+          claimName: pywebsvr-pvc
