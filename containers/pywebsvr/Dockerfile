@@ -30,6 +30,7 @@ RUN yum -y update && \
 # copy the pywebsvr files to the container
 COPY websvr.py /home/pywebsvr/
 COPY start.sh /home/pywebsvr/
+COPY move-results.sh /home/pywebsvr/
 #COPY keep-alive.sh /home/pywebsvr/
 
 # copy the ssh keys
