@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
-from centos
+FROM centos
 
-label version="0.0.10" \
+LABEL version="0.0.10" \
       run="docker run iozone" \
 	  source="" \
 	  description="IOzone benchmark container that executes IOPS and Bandwidth test on a specific mount point. Results can be sent to Logstash, results of individual runs will be stored in /data." \

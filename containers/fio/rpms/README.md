@@ -1,2 +1,2 @@
 # RPM readme file
-This directory is a place holder where RMPs will be copied for installation
+This directory is a place holder where RPMs will be copied for installation

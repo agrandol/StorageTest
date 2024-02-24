@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
-from centos
+FROM centos
 
-label version="0.0.2" \
+LABEL version="0.0.2" \
       run="docker run sample-container" \
 	  source="" \
 	  description="Sample container to verify base configuration and operation." \

@@ -1,7 +1,7 @@
 # start with a CentOS 7 base
-from centos
+FROM centos
 
-label version="0.0.5" \
+LABEL version="0.0.5" \
       run="docker run ranada/fio:0.0.5" \
 	  source="" \
 	  description="fio benchmark container. Results can be sent to Logstash, results will be stored in /data." \
